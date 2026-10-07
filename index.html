@@ -200,6 +200,7 @@ details[open] > .dropdown-row .dd-chevron{transform:rotate(180deg);}
 
 input[type=date],input[type=time]{-webkit-appearance:none;appearance:none;min-width:0;text-align:left;}
 .week-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:5px;margin-top:6px;}
+@media (max-width:500px){ .week-grid{gap:4px;} .week-grid .week-cell{padding:8px 1px 7px;} .week-grid .week-cell-date{font-size:10px;} }
 .week-cell{
   position:relative;min-width:0;background:var(--surface-2);
   border:1px solid var(--line);border-radius:8px;padding:8px 2px 7px;text-align:center;cursor:pointer;
