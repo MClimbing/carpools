@@ -185,6 +185,9 @@ details[open] > .dropdown-row .dd-chevron{transform:rotate(180deg);}
 .admin-add{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px;}
 .admin-add input,.admin-add select{flex:1;min-width:120px;max-width:100%;background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:8px 10px;color:var(--text);font-size:13px;outline:none;}
 .admin-add input[type="checkbox"]{flex:none;min-width:0;width:15px;height:15px;padding:0;accent-color:var(--blue);}
+/* iPhone zooms in on any box with text under 16px; keep phones at 16px so the page stays put */
+@media (max-width:700px){ input:not([type=checkbox]):not([type=radio]), select, textarea{font-size:16px !important;} }
+input[type=date],input[type=time]{-webkit-appearance:none;appearance:none;min-width:0;text-align:left;}
 .email-day-row{display:flex;flex-wrap:wrap;align-items:center;gap:14px;margin-top:12px;}
 
 .week-grid{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px;}
