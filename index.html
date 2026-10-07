@@ -122,6 +122,9 @@ details[open] > .dropdown-row .dd-chevron{transform:rotate(180deg);}
 .pip.on{background:var(--orange);}
 .car-riders{margin-top:6px;display:flex;flex-wrap:wrap;gap:6px;}
 .rider-chip{background:var(--bg);border:1px solid var(--line);border-radius:20px;padding:3px 10px;font-size:12.5px;display:flex;align-items:center;gap:6px;}
+.rider-chip{max-width:100%;box-sizing:border-box;min-width:0;}
+.rider-chip .rider-name{flex:0 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.rider-chip .phone,.rider-chip .note-tag,.rider-chip .remove-x,.rider-chip .switch-campus-x,.rider-chip select{flex:none;white-space:nowrap;}
 .rider-chip.open{color:var(--text-dim);border-style:dashed;}
 .rider-chip.reserved{color:var(--amber);border-color:var(--amber);border-style:dashed;}
 .rider-chip .phone{color:var(--text-dim);font-family:'JetBrains Mono',monospace;font-size:11px;}
@@ -191,6 +194,7 @@ details[open] > .dropdown-row .dd-chevron{transform:rotate(180deg);}
 .admin-add input[type="checkbox"]{flex:none;min-width:0;width:15px;height:15px;padding:0;accent-color:var(--blue);}
 .email-day-row{display:flex;flex-wrap:wrap;align-items:center;gap:14px;margin-top:12px;}
 
+input[type=date],input[type=time]{-webkit-appearance:none;appearance:none;min-width:0;text-align:left;}
 .week-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:5px;margin-top:6px;}
 .week-cell{
   position:relative;min-width:0;background:var(--surface-2);
@@ -849,7 +853,7 @@ function renderEventView(){
         let ridersHtml = car.assigned.map(r=>{
           const stopTag = (isHybrid && r.hybridStop) ? `<span class="note-tag" style="color:var(--blue);font-family:'JetBrains Mono',monospace;font-size:10px;" title="Picked up at ${escapeAttr(locationLabel(r.hybridStop))}">📍${escapeHtml(locationLabel(r.hybridStop))}</span>` : '';
           const rOtherLoc = LOCATIONS.find(l=>l.key!==r.location);
-          return `<div class="rider-chip">${escapeHtml(r.name)}${r.phone ? `<span class="phone">${escapeHtml(r.phone)}</span>` : ''}${stopTag}${r.notes ? `<span class="note-tag" title="${escapeAttr(r.notes)}">📝</span>` : ''}${me.isAdmin ? eventMoveSelectHtml(r, cars, car.email) : ''}${canRemove(r.email) ? `<span class="switch-campus-x" data-switch-event-loc="${r.location}" data-switch-event-email="${r.email}" data-switch-event-to="${rOtherLoc.key}" title="Switch to ${rOtherLoc.label}">⇄</span>` : ''}${canRemove(r.email) ? `<span class="remove-x" data-event-remove-loc="${r.location}" data-event-remove-role="${r.role}" data-event-remove-email="${r.email}">×</span>` : ''}</div>`;
+          return `<div class="rider-chip"><span class="rider-name">${escapeHtml(r.name)}</span>${r.phone ? `<span class="phone">${escapeHtml(r.phone)}</span>` : ''}${stopTag}${r.notes ? `<span class="note-tag" title="${escapeAttr(r.notes)}">📝</span>` : ''}${me.isAdmin ? eventMoveSelectHtml(r, cars, car.email) : ''}${canRemove(r.email) ? `<span class="switch-campus-x" data-switch-event-loc="${r.location}" data-switch-event-email="${r.email}" data-switch-event-to="${rOtherLoc.key}" title="Switch to ${rOtherLoc.label}">⇄</span>` : ''}${canRemove(r.email) ? `<span class="remove-x" data-event-remove-loc="${r.location}" data-event-remove-role="${r.role}" data-event-remove-email="${r.email}">×</span>` : ''}</div>`;
         }).join('');
         const openSeats = seats - car.assigned.length;
         const reservedOpen = Math.min(Number(car.reservedSeats)||0, openSeats);
@@ -2307,7 +2311,7 @@ function render(){
         let ridersHtml = car.assigned.map(r=>{
           const stopTag = (isHybrid && r.hybridStop) ? `<span class="note-tag" style="color:var(--blue);font-family:'JetBrains Mono',monospace;font-size:10px;" title="Picked up at ${escapeAttr(locationLabel(r.hybridStop))}">📍${escapeHtml(locationLabel(r.hybridStop))}</span>` : '';
           const rOtherLoc = LOCATIONS.find(l=>l.key!==r.location);
-          return `<div class="rider-chip">${escapeHtml(r.name)}${r.phone ? `<span class="phone">${escapeHtml(r.phone)}</span>` : ''}${stopTag}${r.notes ? `<span class="note-tag" title="${escapeAttr(r.notes)}">📝</span>` : ''}${me.isAdmin ? moveSelectHtml(r, cars, car.email) : ''}${canRemove(r.email) ? `<span class="switch-campus-x" data-switch-day="${r.day}" data-switch-loc="${r.location}" data-switch-email="${r.email}" data-switch-to="${rOtherLoc.key}" title="Switch to ${rOtherLoc.label}">⇄</span>` : ''}${canRemove(r.email) ? `<span class="remove-x" data-remove-day="${r.day}" data-remove-loc="${r.location}" data-remove-role="${r.role}" data-remove-email="${r.email}">×</span>` : ''}</div>`;
+          return `<div class="rider-chip"><span class="rider-name">${escapeHtml(r.name)}</span>${r.phone ? `<span class="phone">${escapeHtml(r.phone)}</span>` : ''}${stopTag}${r.notes ? `<span class="note-tag" title="${escapeAttr(r.notes)}">📝</span>` : ''}${me.isAdmin ? moveSelectHtml(r, cars, car.email) : ''}${canRemove(r.email) ? `<span class="switch-campus-x" data-switch-day="${r.day}" data-switch-loc="${r.location}" data-switch-email="${r.email}" data-switch-to="${rOtherLoc.key}" title="Switch to ${rOtherLoc.label}">⇄</span>` : ''}${canRemove(r.email) ? `<span class="remove-x" data-remove-day="${r.day}" data-remove-loc="${r.location}" data-remove-role="${r.role}" data-remove-email="${r.email}">×</span>` : ''}</div>`;
         }).join('');
         const openSeats = seats - car.assigned.length;
         const reservedOpen = Math.min(Number(car.reservedSeats)||0, openSeats);
