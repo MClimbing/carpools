@@ -1,0 +1,2749 @@
+<!DOCTYPE html>
+<html>
+<head>
+<base target="_top">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Michigan Climbing Carpools</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;500;600;700&display=swap');
+
+
+:root{
+  --bg:#041c35; --surface:#0a2c4d; --surface-2:#123a61; --line:#1f4a75;
+  --text:#f4f7fb; --text-dim:#9fb4cc; --blue:#6fa8dc;
+  --orange:#ffcb05; --orange-dim:#ffcb0533;
+  --green:#4caf7d; --amber:#f2b94d; --red:#ff6b6b; --radius:10px;
+}
+*{box-sizing:border-box;}
+html{background:var(--bg);min-height:100vh;height:100%;}
+body{margin:0;background:var(--bg);color:var(--text);font-family:'Inter',system-ui,sans-serif;min-height:100vh;height:100%;-webkit-font-smoothing:antialiased;overflow-x:hidden;}
+.app{max-width:760px;margin:0 auto;padding:20px 16px 60px;}
+header{border-bottom:1px solid var(--line);padding-bottom:16px;margin-bottom:18px;display:flex;align-items:center;gap:14px;position:relative;}
+.header-logo{width:64px;height:64px;flex-shrink:0;object-fit:contain;}
+.header-text{flex:1;min-width:0;}
+.eyebrow{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.14em;color:var(--orange);text-transform:uppercase;margin-bottom:6px;}
+h1{font-size:26px;margin:0 0 6px;font-weight:700;letter-spacing:-0.01em;}
+.week-range{font-family:'JetBrains Mono',monospace;font-size:12.5px;color:var(--text-dim);}
+
+.gate{text-align:center;padding:60px 20px;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);}
+.gate p{color:var(--text-dim);font-size:14px;}
+.gate .err{color:var(--red);font-size:13px;margin-top:14px;}
+.signin{text-align:center;padding:44px 20px;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);}
+.signin h2{font-size:20px;margin:0 0 6px;}
+.signin p{color:var(--text-dim);font-size:14px;margin:0 0 20px;}
+.signin #gsiBtn{display:inline-block;min-height:44px;}
+.signin .fine{color:var(--text-dim);font-size:12px;margin-top:16px;}
+.signin .err{color:var(--red);font-size:13px;margin-top:14px;}
+.signout-link{background:none;border:none;color:var(--blue);text-decoration:underline;cursor:pointer;font-size:12.5px;padding:0;font-family:inherit;margin-left:auto;}
+
+.account-bar{display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:10px 14px;margin-bottom:14px;font-size:13px;}
+.account-bar .who{display:flex;align-items:center;gap:8px;}
+.admin-badge{background:var(--orange-dim);color:var(--orange);border:1px solid var(--orange);border-radius:20px;padding:2px 9px;font-size:10.5px;font-family:'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:.06em;}
+
+.name-bar{display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:10px 14px;margin-bottom:10px;}
+.name-bar + .name-bar{margin-bottom:16px;}
+.name-bar label{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.08em;white-space:nowrap;}
+.required-star{color:var(--red);margin-left:2px;}
+.name-bar input{flex:1;background:transparent;border:none;color:var(--text);font-size:14.5px;font-family:'Inter',sans-serif;outline:none;}
+.name-bar input::placeholder{color:var(--text-dim);}
+.name-status{font-size:11px;color:var(--green);font-family:'JetBrains Mono',monospace;opacity:0;transition:opacity .3s;}
+.name-status.show{opacity:1;}
+
+.hamburger-btn{background:var(--surface);border:1px solid var(--line);border-radius:8px;width:40px;height:40px;flex-shrink:0;color:var(--text);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:border-color .15s, color .15s;}
+.hamburger-btn:hover{border-color:var(--orange);color:var(--orange);}
+.hamburger-menu{position:absolute;top:100%;right:0;margin-top:8px;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);min-width:240px;max-width:300px;max-height:70vh;overflow-y:auto;box-shadow:0 8px 24px rgba(0,0,0,0.45);z-index:50;padding:6px;}
+.hamburger-menu .hm-section-label{font-family:'JetBrains Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--text-dim);padding:10px 10px 4px;}
+.hamburger-menu .hm-item{padding:9px 10px;border-radius:6px;cursor:pointer;font-size:13.5px;color:var(--text);line-height:1.3;}
+.hamburger-menu .hm-item:hover{background:var(--orange-dim);color:var(--orange);}
+.hamburger-menu .hm-divider{height:1px;background:var(--line);margin:6px 4px;}
+.hamburger-menu .hm-item-muted{cursor:default;color:var(--text-dim);font-style:italic;}
+.hamburger-menu .hm-item-muted:hover{background:none;color:var(--text-dim);}
+
+.dropdown-row{list-style:none;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--surface-2);border:1px solid var(--line);border-radius:8px;padding:10px 14px;margin-bottom:8px;font-family:'JetBrains Mono',monospace;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--text-dim);transition:border-color .15s, color .15s;}
+.dropdown-row::-webkit-details-marker{display:none;}
+.dropdown-row::marker{content:'';}
+.dropdown-row:hover{border-color:var(--blue);color:var(--text);}
+.dropdown-row .dd-chevron{flex-shrink:0;transition:transform .15s;}
+details[open] > .dropdown-row .dd-chevron{transform:rotate(180deg);}
+
+.role-bar{display:flex;gap:8px;margin:0 0 16px;}
+.event-banner-card{
+  display:flex;align-items:center;justify-content:space-between;gap:10px;cursor:pointer;
+  background:linear-gradient(135deg, var(--orange-dim), transparent);border:1px solid var(--orange);
+  border-radius:var(--radius);padding:12px 14px;margin-bottom:16px;transition:background .15s;
+}
+.event-banner-card:hover{background:var(--orange-dim);}
+.event-banner-card .ebc-title{font-weight:700;font-size:14.5px;color:var(--text);}
+.event-banner-card .ebc-sub{font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--text-dim);margin-top:3px;}
+.event-banner-card .ebc-arrow{font-size:18px;color:var(--orange);flex-shrink:0;}
+.event-banner-more{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-dim);cursor:pointer;text-align:center;margin:-8px 0 16px;text-decoration:underline;}
+.event-head-bar{display:flex;justify-content:flex-start;margin-bottom:14px;}
+.event-head-bar #eventBackLink{cursor:pointer;color:var(--text-dim);font-family:'JetBrains Mono',monospace;font-size:11.5px;text-transform:uppercase;letter-spacing:.04em;}
+.event-head-bar #eventBackLink:hover{color:var(--orange);}
+.lock-banner{
+  background:var(--red);background:rgba(255,107,107,0.12);border:1px solid var(--red);
+  border-radius:var(--radius);padding:12px 14px;margin-bottom:14px;font-size:13px;
+  color:var(--text);line-height:1.5;
+}
+.lock-schedule-note{color:var(--text-dim);font-size:12px;margin-bottom:12px;}
+.role-btn{flex:1;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:10px;text-align:center;cursor:pointer;font-weight:600;font-size:13.5px;color:var(--text-dim);transition:border-color .15s, background .15s, color .15s;}
+.role-btn .sub{display:block;font-family:'Inter',sans-serif;font-size:13px;font-weight:400;font-style:italic;margin-top:2px;color:var(--text-dim);}
+.role-btn.active{border-color:var(--blue);background:#6fa8dc22;color:var(--text);}
+.role-btn.active.driver{border-color:var(--orange);background:var(--orange-dim);}
+
+.day-tabs{display:flex;gap:8px;margin-bottom:8px;}
+.day-tab{flex:1;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:10px 4px;text-align:center;cursor:pointer;}
+.day-tab .d{font-family:'Inter',sans-serif;font-size:11.5px;font-weight:600;color:var(--text-dim);letter-spacing:.01em;}
+.day-tab .dt{font-family:'Inter',sans-serif;font-size:13px;font-weight:400;font-style:italic;color:var(--text-dim);margin-top:2px;}
+.day-tab.active{border-color:var(--orange);background:var(--orange-dim);}
+.day-tab.active .d{color:var(--text);}
+
+.locations{display:flex;flex-direction:column;gap:16px;}
+.loc-panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:16px;}
+.loc-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px;}
+.loc-head h2{font-size:15px;margin:0;font-weight:700;}
+.loc-count{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--text-dim);}
+.loc-subheading{color:var(--text-dim);font-size:13px;font-style:italic;padding:0 0 12px;}
+.gauge{display:flex;gap:3px;margin-bottom:16px;}
+.gauge .seg{flex:1;height:6px;border-radius:2px;background:var(--surface-2);border:1px solid var(--line);}
+.gauge .seg.filled{background:var(--orange);border-color:var(--orange);}
+.gauge .seg.empty-driver{background:transparent;border-color:var(--line);border-style:dashed;}
+
+.section-label{font-family:'JetBrains Mono',monospace;font-size:10.5px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.1em;margin:14px 0 8px;}
+.section-label:first-child{margin-top:0;}
+
+.car-card{background:var(--surface-2);border:1px solid var(--line);border-radius:8px;padding:10px 12px;margin-bottom:8px;}
+.car-top{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;row-gap:6px;}
+.car-name{font-weight:600;font-size:14px;flex:1 1 auto;min-width:0;}
+.car-name .phone{font-weight:400;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-dim);margin-left:8px;}
+.car-seats{display:flex;gap:4px;}
+.pip{width:9px;height:9px;border-radius:50%;border:1.5px solid var(--orange);}
+.pip.on{background:var(--orange);}
+.car-riders{margin-top:6px;display:flex;flex-wrap:wrap;gap:6px;}
+.rider-chip{background:var(--bg);border:1px solid var(--line);border-radius:20px;padding:3px 10px;font-size:12.5px;display:flex;align-items:center;gap:6px;}
+.rider-chip.open{color:var(--text-dim);border-style:dashed;}
+.rider-chip.reserved{color:var(--amber);border-color:var(--amber);border-style:dashed;}
+.rider-chip .phone{color:var(--text-dim);font-family:'JetBrains Mono',monospace;font-size:11px;}
+.note-tag{cursor:help;font-size:11px;}
+.car-note{font-size:12.5px;font-style:italic;color:var(--amber);margin:6px 0 2px;}
+.car-sub{display:flex;flex-wrap:wrap;align-items:center;gap:2px 6px;margin-top:4px;}
+.car-vehicle{font-size:12.5px;color:var(--text-dim);flex:1 1 0%;min-width:60px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.car-controls{display:flex;flex-wrap:nowrap;align-items:center;gap:6px;flex:0 0 auto;margin-left:auto;}
+.move-select{
+  background:var(--bg);border:1px solid var(--blue);border-radius:12px;color:var(--text);
+  font-size:10.5px;padding:2px 5px;outline:none;cursor:pointer;max-width:110px;
+}
+.remove-x{cursor:pointer;color:var(--text-dim);font-size:13px;line-height:1;}
+.remove-x:hover{color:var(--red);}
+.switch-campus-x{cursor:pointer;color:var(--text-dim);font-size:12px;line-height:1;}
+.switch-campus-x:hover{color:var(--blue);}
+.driver-remove{cursor:pointer;color:var(--text-dim);font-size:12px;font-family:'JetBrains Mono',monospace;white-space:nowrap;}
+.driver-remove:hover{color:var(--red);}
+
+.waiting-row{background:transparent;border:1px dashed var(--amber);border-radius:8px;padding:8px 12px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center;font-size:13px;}
+.waiting-row .tag{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--amber);text-transform:uppercase;letter-spacing:.06em;}
+
+.empty-note{color:var(--text-dim);font-size:13px;font-style:italic;padding:4px 0 2px;}
+
+.add-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;}
+.seats-input{
+  width:130px;background:var(--bg);border:1px solid var(--line);border-radius:6px;
+  padding:8px 10px;color:var(--text);font-size:13.5px;text-align:left;outline:none;
+  font-family:'Inter',sans-serif;-webkit-appearance:none;appearance:none;cursor:pointer;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%239fb4cc'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 10px center;
+}
+.seats-input option{background:var(--surface);color:var(--text);}
+.driver-move-select{width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:middle;}
+.driver-move-select option{background:var(--surface);color:var(--text);white-space:normal;}
+.note-input{
+  width:100%;background:var(--bg);border:1px solid var(--line);border-radius:6px;
+  padding:8px 10px;color:var(--text);font-size:13px;font-family:'Inter',sans-serif;outline:none;
+}
+.note-input::placeholder{color:var(--text-dim);}
+.btn{background:var(--orange);color:var(--bg);border:none;border-radius:6px;padding:8px 14px;font-weight:700;font-size:13px;cursor:pointer;max-width:100%;}
+.btn:hover{filter:brightness(1.08);}
+.btn.secondary{background:var(--surface-2);color:var(--text);border:1px solid var(--line);}
+.btn:disabled{opacity:.4;cursor:not-allowed;}
+
+.you-status{display:flex;justify-content:space-between;align-items:center;background:var(--surface-2);border:1px solid var(--blue);border-radius:8px;padding:9px 12px;margin-top:10px;font-size:13px;}
+.you-status.driver{border-color:var(--orange);}
+.you-status .cancel{cursor:pointer;color:var(--text-dim);font-family:'JetBrains Mono',monospace;font-size:11px;text-transform:uppercase;}
+.you-status .cancel:hover{color:var(--red);}
+
+.admin-panel{background:var(--surface);border:1px solid var(--orange);border-radius:var(--radius);padding:16px;margin-bottom:18px;}
+.admin-panel h3{margin:0 0 4px;font-size:14px;}
+.admin-panel .sub{color:var(--text-dim);font-size:12px;margin-bottom:12px;}
+.admin-row{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--line);font-size:13px;}
+.admin-row:last-child{border-bottom:none;}
+.day-lock-row{padding:9px 0;border-bottom:1px solid var(--line);}
+.day-lock-row:last-of-type{border-bottom:none;}
+.day-lock-top{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:6px 10px;font-size:13px;}
+.day-lock-schedule{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px;margin-top:8px;}
+.day-lock-schedule select{background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:6px 8px;color:var(--text);font-size:12.5px;outline:none;}
+.admin-add{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px;}
+.admin-add input,.admin-add select{flex:1;min-width:120px;max-width:100%;background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:8px 10px;color:var(--text);font-size:13px;outline:none;}
+.admin-add input[type="checkbox"]{flex:none;min-width:0;width:15px;height:15px;padding:0;accent-color:var(--blue);}
+.email-day-row{display:flex;flex-wrap:wrap;align-items:center;gap:14px;margin-top:12px;}
+
+.week-grid{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px;}
+.week-cell{
+  position:relative;flex:1 1 0;min-width:56px;background:var(--surface-2);
+  border:1px solid var(--line);border-radius:8px;padding:8px 4px 7px;text-align:center;cursor:pointer;
+}
+.week-cell:hover{border-color:var(--blue);}
+.week-cell.active{border-color:var(--orange);background:var(--orange-dim);cursor:default;}
+.week-cell.active:hover{border-color:var(--orange);}
+.week-cell-day{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.04em;color:var(--text-dim);}
+.week-cell.active .week-cell-day{color:var(--text);}
+.week-cell-date{font-size:11px;font-style:italic;color:var(--text-dim);margin-top:2px;}
+.week-cell-x{
+  position:absolute;top:1px;right:4px;font-size:12px;line-height:1;color:var(--text-dim);cursor:pointer;
+}
+.week-cell-x:hover{color:var(--red);}
+/* Date / time fields: styled like the other admin dropdowns. On iOS an empty
+   date/time input renders blank, so a placeholder label sits on top until a
+   value is chosen. */
+.admin-add .comp-field{position:relative;flex:1 1 0;min-width:0;}
+.admin-add .comp-field input{
+  /* same as the attendance site's date field: native control, dark scheme, full width */
+  display:block;flex:none;width:100%;min-width:0;max-width:100%;height:35px;
+  font-family:'Inter',sans-serif;
+  color-scheme:dark;
+}
+.admin-add .comp-field input::-webkit-calendar-picker-indicator{cursor:pointer;opacity:.8;}
+.admin-add .comp-field .comp-ph{
+  position:absolute;left:11px;top:50%;transform:translateY(-50%);pointer-events:none;
+  font-size:13px;color:#9fb4cc; /* matches the placeholders of the other inputs */
+}
+.admin-add .comp-field.has-value .comp-ph{display:none;}
+/* Every input/textarea placeholder in the app uses the same blue-grey as the sub text (--text-dim). */
+input::placeholder,textarea::placeholder{color:var(--text-dim);opacity:1;}
+.admin-add .comp-field:not(.has-value) input{color:transparent;}
+.admin-add .comp-field:not(.has-value) input::-webkit-datetime-edit{opacity:0;}
+/* Comp list rows */
+.comp-row{padding:10px 0;border-bottom:1px solid var(--line);}
+.comp-row-name{font-size:14px;font-weight:600;line-height:1.3;}
+.comp-row-meta{margin-top:3px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-dim);}
+.comp-row-actions{display:flex;align-items:center;gap:16px;margin-top:8px;}
+.comp-row-actions .cancel{cursor:pointer;color:var(--text-dim);font-family:'JetBrains Mono',monospace;font-size:11px;text-transform:uppercase;letter-spacing:.04em;}
+.comp-row-actions .cancel.primary{color:var(--blue);}
+.comp-row-actions .cancel:hover{color:var(--red);}
+.comp-row-actions .remove-x{margin-left:auto;font-size:16px;padding:0 2px;}
+.comp-row-actions .remove-x:hover{color:var(--red);}
+.time-input{
+  background:var(--bg);border:1px solid var(--line);border-radius:6px;
+  padding:6px 8px;color:var(--text);font-size:13px;font-family:'Inter',sans-serif;outline:none;
+}
+
+.day-manager{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-top:6px;}
+.day-cell{
+  position:relative;background:var(--surface-2);border:1px solid var(--line);border-radius:8px;
+  padding:10px 2px;text-align:center;cursor:pointer;font-family:'JetBrains Mono',monospace;
+  font-size:10.5px;color:var(--text-dim);letter-spacing:.04em;transition:border-color .15s, background .15s;
+}
+.day-cell.active{background:var(--orange-dim);border-color:var(--orange);color:var(--text);font-weight:600;}
+.day-cell:not(.active):hover{border-color:var(--blue);}
+.day-cell-remove{
+  position:absolute;top:-7px;right:-7px;width:17px;height:17px;border-radius:50%;
+  background:var(--red);color:#fff;font-size:11px;line-height:17px;text-align:center;cursor:pointer;
+}
+
+.update-banner{
+  position:fixed;top:14px;left:50%;transform:translateX(-50%);
+  width:calc(100% - 32px);max-width:728px;z-index:1000;
+  box-shadow:0 6px 20px rgba(0,0,0,0.35);
+  background:var(--orange-dim);border:1px solid var(--orange);border-radius:var(--radius);
+  padding:16px 20px;font-size:15px;display:flex;align-items:center;
+  justify-content:space-between;gap:14px;cursor:pointer;color:var(--text);
+  backdrop-filter:blur(6px);
+}
+.update-banner:hover{filter:brightness(1.08);}
+.update-banner .refresh-label{
+  font-weight:700;font-size:15px;color:var(--orange);white-space:nowrap;
+}
+.loading-dots{display:inline-flex;gap:4px;align-items:center;justify-content:center;height:1em;margin-left:5px;}
+.loading-dots span{
+  width:6px;height:6px;border-radius:50%;background:currentColor;display:inline-block;
+  animation:loading-dot-bounce 0.9s infinite ease-in-out both;
+}
+.loading-dots span:nth-child(1){animation-delay:-0.32s;}
+.loading-dots span:nth-child(2){animation-delay:-0.16s;}
+.loading-dots span:nth-child(3){animation-delay:0s;}
+@keyframes loading-dot-bounce{
+  0%, 80%, 100% { transform:scale(0.4); opacity:0.4; }
+  40% { transform:scale(1); opacity:1; }
+}
+.loading{text-align:center;color:var(--text-dim);font-family:'JetBrains Mono',monospace;font-size:12px;padding:40px 0;}
+.admin-divider{
+  display:flex;align-items:center;gap:12px;margin:32px 0 18px;
+  color:var(--text-dim);font-family:'JetBrains Mono',monospace;font-size:11px;
+  text-transform:uppercase;letter-spacing:.1em;
+}
+.admin-divider::before,.admin-divider::after{
+  content:'';flex:1;height:1px;background:var(--line);
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <img src="data:image/png;base64,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" alt="Michigan Climbing Team logo" class="header-logo" />
+    <div class="header-text">
+      <div class="eyebrow">Michigan Climbing Team · Carpool Manifest</div>
+      <h1>Practice Carpools</h1>
+      <div class="week-range" id="weekRange">loading week<span class="loading-dots"><span></span><span></span><span></span></span></div>
+    </div>
+    <button class="hamburger-btn" id="hamburgerBtn" type="button" aria-label="Menu">☰</button>
+    <div class="hamburger-menu" id="hamburgerMenu" style="display:none;"></div>
+  </header>
+
+  <div class="signin" id="signin" style="display:none">
+    <h2>Sign in for carpools</h2>
+    <p>Use your @umich.edu Google account. You'll stay signed in for about a month.</p>
+    <div id="gsiBtn"></div>
+    <div class="err" id="signinErr"></div>
+    <div class="fine">Michigan Climbing Team only.</div>
+  </div>
+
+  <div id="gate" class="gate" style="display:none;">
+    <p id="gateMsg">Loading…</p>
+    <div class="err" id="gateErr"></div>
+  </div>
+
+  <div id="mainUI" style="display:none;">
+    <div class="account-bar">
+      <div class="who">
+        <span id="acctEmail"></span>
+        <span class="admin-badge" id="adminBadge" style="display:none;">Admin</span>
+      </div>
+      <button type="button" class="signout-link" id="signOutBtn">Sign out</button>
+    </div>
+
+    <div id="updateBanner" style="display:none;"></div>
+
+    <div class="name-bar">
+      <label>Name<span class="required-star">*</span></label>
+      <input id="myName" type="text" placeholder="First and last name" />
+      <span class="name-status" id="nameStatus">saved</span>
+    </div>
+    <div class="name-bar">
+      <label>Phone<span class="required-star">*</span></label>
+      <input id="myPhone" type="tel" placeholder="(xxx) xxx-xxxx" />
+      <span class="name-status" id="phoneStatus">saved</span>
+    </div>
+    <div class="name-bar">
+      <label>Car</label>
+      <input id="myCar" type="text" maxlength="100" placeholder="e.g. Blue 2019 Honda Civic (if driving)" />
+      <span class="name-status" id="carStatus">saved</span>
+    </div>
+
+    <div id="eventBanner" style="display:none;"></div>
+
+    <div class="role-bar" id="roleBar">
+      <div class="role-btn driver" data-role="driver">I'M DRIVING<span class="sub">offer seats</span></div>
+      <div class="role-btn" data-role="rider">I NEED A RIDE<span class="sub">request a seat</span></div>
+    </div>
+
+    <div id="weeklyView">
+      <div id="lockBanner" class="lock-banner" style="display:none;">
+        🔒 Sign-ups are locked for this week. Existing sign-ups are shown below, but no new changes can be made until an admin unlocks it.
+      </div>
+      <div id="restrictedBanner" class="lock-banner" style="display:none;">
+        🔒 The roster is finalized — sign-ups are now restricted. Contact an admin if you need to be added.
+      </div>
+      <div id="lockScheduleNote" class="lock-schedule-note" style="display:none;"></div>
+
+      <div class="day-tabs" id="dayTabs"></div>
+
+      <div class="locations" id="locations"><div class="loading">loading manifest<span class="loading-dots"><span></span><span></span><span></span></span></div></div>
+    </div>
+
+    <div id="eventView" style="display:none;">
+      <div class="event-head-bar">
+        <span class="cancel" id="eventBackLink">← Back to weekly practices</span>
+      </div>
+      <div class="day-tabs" style="margin-bottom:14px;">
+        <div class="day-tab active" style="cursor:default;">
+          <div class="d" id="eventTitleLabel"></div>
+          <div class="dt" id="eventDateLabel"></div>
+        </div>
+      </div>
+      <div id="eventLockBanner" class="lock-banner" style="display:none;">
+        🔒 Sign-ups are locked for this comp. Existing sign-ups are shown below, but no new changes can be made until an admin unlocks it.
+      </div>
+      <div class="locations" id="eventLocations"></div>
+    </div>
+
+    <div id="adminSection" style="display:none;">
+      <div class="admin-divider"><span>Admin tools</span></div>
+      <div id="adminPanelWrap"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// Set server-side from the ?event=<id> query param (used by the "View live
+// roster" link in comp emails) so this page can drop straight into that
+// comp instead of the weekly view. Empty string when there's none.
+const INITIAL_EVENT_ID = new URLSearchParams(location.search).get('event') || '';
+const BASE_DAYS = ['Tuesday', 'Thursday', 'Sunday'];
+const WEEKDAY_ORDER = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+const LOCATIONS = [
+  {key:'central', label:'Central Campus', subheading:'Pick up at the Cube'},
+  {key:'north', label:'North Campus', subheading:'Pick up at Bursley Loop'}
+];
+
+let me = null;         // {email, isAdmin, name, phone, weekKey, weekDates}
+let activeDay = 'Tuesday';
+let myRole = null;
+let rows = [];          // current week's signups
+let admins = [];
+let adminListOpen = false;
+let restrictedList = [];
+let restrictedListLoaded = false;
+let restrictedListOpen = false;
+let hybridDrivers = [];
+let hybridDriversLoaded = false;
+let hybridListOpen = false;
+let allProfiles = [];
+let allProfilesLoaded = false;
+let pastWeeks = [];
+let pastWeeksLoaded = false;
+let pollTimer = null;
+
+// ---- events (one-off carpools like competitions, separate from weekly practices) ----
+let events = [];              // all known events, from getBootstrap
+let viewingEvent = null;      // id of the event currently open, or null when on the weekly view
+let activeEvent = null;       // {id, name, eventDate, pickupTime, locked}
+let eventRows = [];
+let eventBannerOpen = false;  // whether the "+N more" expanded list is showing
+let eventPollTimer = null;
+let lastEventSignature = null;
+let eventFormEditingId = null;  // id of the event being edited in the admin panel's form, or null when creating new
+function eventBeingEdited(){ return events.find(e=>e.id===eventFormEditingId) || null; }
+async function reloadEvents(){
+  try{ events = await callServer('listEvents'); }catch(e){}
+  renderEventBanner();
+  if(me && me.isAdmin) renderAdminPanel();
+}
+
+function renderCurrent(){ if(viewingEvent){ renderEventView(); } else { render(); } }
+
+// ===== Server connection (GitHub Pages → Apps Script API) =====
+const API_URL = 'https://script.google.com/macros/s/AKfycbwqX9IuZW-3PZOfBw1e6ynOIE7TlRw7jtTe6ly35yHqEW2Nf0d3socuzSxRFX2l5j8/exec';
+const GOOGLE_CLIENT_ID = '38091059543-9k4fjddinjsha30f9ljbov9n2avp03pf.apps.googleusercontent.com';
+const SESSION_KEY = 'mcc_session';
+let session = null;
+function loadSession(){ try { const s = JSON.parse(localStorage.getItem(SESSION_KEY) || 'null'); if (s && s.exp > Date.now()) return s; } catch (e) {} return null; }
+function saveSession(s){ session = s; try { if (s) localStorage.setItem(SESSION_KEY, JSON.stringify(s)); else localStorage.removeItem(SESSION_KEY); } catch (e) {} }
+async function callServer(fnName, args, extra){
+  let res;
+  try {
+    res = await fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(Object.assign({ fn: fnName, args: args || [], session: session && session.session }, extra || {})) });
+  } catch (e) { throw new Error("Couldn't reach the server. Check your connection and try again."); }
+  let out; try { out = await res.json(); } catch (e) { throw new Error("Couldn't reach the server. Try again."); }
+  if (!out.ok){ if (out.auth){ saveSession(null); showSignIn('Your sign-in expired. Sign in again.'); } throw new Error(out.error || 'Something went wrong.'); }
+  return out.result;
+}
+function showSignIn(msg){
+  ['gate','mainUI'].forEach(id => { const n = document.getElementById(id); if (n) n.style.display = 'none'; });
+  document.getElementById('signin').style.display = 'block';
+  document.getElementById('signinErr').textContent = msg || '';
+  renderGoogleButton();
+}
+function renderGoogleButton(){
+  if (!window.google || !google.accounts || !google.accounts.id){ setTimeout(renderGoogleButton, 200); return; }
+  google.accounts.id.initialize({ client_id: GOOGLE_CLIENT_ID, hd: 'umich.edu', auto_select: true, ux_mode: 'popup',
+    callback: r => {
+      document.getElementById('signinErr').textContent = '';
+      callServer('signIn', [], { idToken: r.credential })
+        .then(s => { saveSession(s); document.getElementById('signin').style.display = 'none'; init(); })
+        .catch(e => { document.getElementById('signinErr').textContent = (e && e.message) || "Couldn't sign in."; });
+    } });
+  document.getElementById('gsiBtn').innerHTML = '';
+  google.accounts.id.renderButton(document.getElementById('gsiBtn'), { theme: 'filled_black', size: 'large', shape: 'pill', text: 'signin_with' });
+}
+
+// The very first call after a page load occasionally comes back empty due to
+// a known Apps Script timing quirk (the sandboxed iframe's messaging bridge
+// isn't always ready yet) — not a real error. Retry a couple of times before
+// giving up.
+async function callServerWithRetry(fnName, args, retries){
+  retries = retries === undefined ? 2 : retries;
+  let result = await callServer(fnName, args);
+  let attempt = 0;
+  while(!result && attempt < retries){
+    await new Promise(r=>setTimeout(r, 700));
+    result = await callServer(fnName, args);
+    attempt++;
+  }
+  return result;
+}
+
+function formatPhone(value){
+  const digits = value.replace(/\D/g,'').slice(0,10);
+  if(digits.length > 6) return `(${digits.slice(0,3)}) ${digits.slice(3,6)}-${digits.slice(6)}`;
+  if(digits.length > 3) return `(${digits.slice(0,3)}) ${digits.slice(3)}`;
+  if(digits.length > 0) return `(${digits}`;
+  return '';
+}
+function phoneIsValid(value){ return (value||'').replace(/\D/g,'').length === 10; }
+function nameIsValid(value){ return (value||'').trim().split(/\s+/).filter(Boolean).length >= 2; }
+function escapeHtml(s){ return String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function escapeAttr(s){ return escapeHtml(s).replace(/"/g,'&quot;'); }
+function formatTime12h(t){
+  if(!t) return '';
+  const parts = t.split(':');
+  if(parts.length < 2) return t;
+  let h = parseInt(parts[0], 10);
+  const m = parts[1];
+  if(isNaN(h)) return t;
+  const ampm = h >= 12 ? 'PM' : 'AM';
+  h = h % 12; if(h === 0) h = 12;
+  return `${h}:${m} ${ampm}`;
+}
+const HYBRID_OFFSET_MINUTES = 10;
+function offsetTimeMinutes(timeStr, deltaMinutes){
+  if(!timeStr) return '';
+  const parts = timeStr.split(':');
+  const h = parseInt(parts[0], 10) || 0;
+  const m = parseInt(parts[1], 10) || 0;
+  const total = ((h*60 + m + deltaMinutes) % 1440 + 1440) % 1440;
+  const nh = Math.floor(total/60);
+  const nm = total % 60;
+  return (nh<10?'0':'')+nh + ':' + (nm<10?'0':'')+nm;
+}
+function locationLabel(key){
+  const found = LOCATIONS.find(l=>l.key===key);
+  return found ? found.label : key;
+}
+function canRemove(entryEmail){ return me && (entryEmail === me.email || me.isAdmin); }
+function moveSelectHtml(rider, cars, currentCarEmail){
+  currentCarEmail = currentCarEmail || '';
+  const options = [`<option value="" ${!currentCarEmail ? 'selected':''}>No preference</option>`]
+    .concat(cars.map(c=>`<option value="${escapeAttr(c.email)}" ${c.email===currentCarEmail ? 'selected':''}>${escapeHtml(c.name)}</option>`));
+  return `<select class="move-select" data-move-day="${rider.day}" data-move-loc="${rider.location}" data-move-rider="${escapeAttr(rider.email)}" data-move-from="${escapeAttr(currentCarEmail)}">${options.join('')}</select>`;
+}
+
+async function init(){
+  try{
+    me = await callServerWithRetry('getBootstrap', [], 2);
+    if(!me){ throw new Error('Server returned no data after a few tries — try reloading the page.'); }
+    if(me.error){ throw new Error(me.error); }
+  }catch(e){
+    if(document.getElementById('signin').style.display === 'block') return;   // sign-in expired; sign-in screen is showing
+    document.getElementById('gate').style.display = 'block';
+    document.getElementById('gateMsg').textContent = '';
+    document.getElementById('gateErr').textContent = (e && e.message) || 'Sign in with your umich.edu Google account and reload this page.';
+    return;
+  }
+  me.dayLocks = me.dayLocks || {};
+  me.lockSchedules = me.lockSchedules || {};
+  me.restrictedMode = !!me.restrictedMode;
+  me.restrictedAllowed = me.restrictedAllowed !== false;
+
+  if(me.restrictedMode && !me.restrictedAllowed){
+    const wdBlocked = me.weekDates || {};
+    document.getElementById('weekRange').textContent = wdBlocked.mondayLabel ? `Week of ${wdBlocked.mondayLabel}` : '';
+    showAccessBlocked();
+    return;
+  }
+
+  try{
+    document.getElementById('gate').style.display = 'none';
+    document.getElementById('mainUI').style.display = 'block';
+    document.getElementById('acctEmail').textContent = me.email;
+    document.getElementById('myName').value = me.name || '';
+    document.getElementById('myPhone').value = me.phone || '';
+    document.getElementById('myCar').value = me.car || '';
+
+    const wd = me.weekDates || {};
+    document.getElementById('weekRange').textContent = wd.mondayLabel ? `Week of ${wd.mondayLabel}` : 'Week of —';
+
+    events = me.events || [];
+    renderEventBanner();
+
+    if(INITIAL_EVENT_ID && events.some(ev=>ev.id===INITIAL_EVENT_ID)){
+      // Came in from a comp email's "View live roster" link — jump straight
+      // into that comp instead of the weekly view. closeEvent() (the "back"
+      // link) sets up the normal weekly refresh/poll when they leave it.
+      await openEvent(INITIAL_EVENT_ID);
+    } else {
+      await refresh();
+      pollTimer = setInterval(checkForUpdates, 5000);
+    }
+  }catch(e){
+    document.getElementById('locations').innerHTML =
+      `<div class="loading" style="color:var(--red);">Startup error: ${escapeHtml((e && e.message) || String(e))}</div>`;
+  }
+}
+
+// Full gate for restricted mode: someone not on the allow-list (and not an
+// admin) gets a plain message instead of the roster — not even read-only
+// access — reusing the same #gate element the sign-in screen uses.
+function showAccessBlocked(){
+  if(pollTimer){ clearInterval(pollTimer); pollTimer = null; }
+  document.getElementById('mainUI').style.display = 'none';
+  document.getElementById('gate').style.display = 'block';
+  document.getElementById('gateMsg').textContent = 'Sign-ups are restricted right now.';
+  document.getElementById('gateErr').textContent =
+    "The roster has been finalized and you're not on the allow-list, so you don't have access to this page. Contact a team admin if you think this is a mistake.";
+}
+
+let lastSignature = null;
+function signatureOf(rowsArr, hiddenDaysArr, extraDaysArr, pickupTimesObj, dayLocksObj, restrictedMode, restrictedAllowed){
+  const rowsPart = rowsArr
+    .map(r=>`${r.day}|${r.location}|${r.role}|${r.email}|${r.seats}|${r.driverChoice||''}|${r.reservedSeats||0}`)
+    .sort()
+    .join('~');
+  const hiddenPart = (hiddenDaysArr||[]).slice().sort().join(',');
+  const extraPart = (extraDaysArr||[]).slice().sort().join(',');
+  const timesPart = Object.keys(pickupTimesObj||{}).sort().map(k=>`${k}=${pickupTimesObj[k]}`).join(',');
+  const locksPart = Object.keys(dayLocksObj||{}).sort().map(k=>`${k}=${dayLocksObj[k].locked?'1':'0'}`).join(',');
+  return rowsPart + '::' + hiddenPart + '::' + extraPart + '::' + timesPart + '::' + locksPart + '::' + (restrictedMode?'1':'0') + '::' + (restrictedAllowed?'1':'0');
+}
+
+async function refresh(){
+  try{
+    const data = await callServer('getWeekData');
+    if(!data){ throw new Error('Server returned no data at all (likely an Apps Script quota or auth hiccup).'); }
+    if(data.error){ throw new Error(data.error); }
+    if(me){
+      me.isAdmin = data.isAdmin;
+      me.hiddenDays = data.hiddenDays || [];
+      me.extraDays = data.extraDays || [];
+      me.pickupTimes = data.pickupTimes || {};
+      me.dayLocks = data.dayLocks || {};
+      me.lockSchedules = data.lockSchedules || {};
+      me.restrictedMode = !!data.restrictedMode;
+      me.restrictedAllowed = data.restrictedAllowed !== false;
+    }
+    if(me && me.restrictedMode && !me.restrictedAllowed){
+      rows = [];
+      showAccessBlocked();
+      return;
+    }
+    rows = data.rows;
+    lastSignature = signatureOf(rows, data.hiddenDays, data.extraDays, data.pickupTimes, data.dayLocks, data.restrictedMode, data.restrictedAllowed);
+    hideUpdateBanner();
+    render();
+  } catch(e){
+    document.getElementById('locations').innerHTML =
+      `<div class="loading" style="color:var(--red);">Couldn't load: ${escapeHtml((e && e.message) || String(e))}</div>`;
+  }
+}
+
+// Lightweight background check: does NOT touch the DOM or disturb whatever
+// the person is doing. If the data has actually changed since we last drew
+// the page, show a small banner instead of redrawing underneath them.
+async function checkForUpdates(){
+  if(viewingEvent) return; // paused while looking at an event's sign-up page
+  try{
+    const data = await callServer('getWeekData');
+    if(!data || data.error) return;
+    const sig = signatureOf(data.rows, data.hiddenDays, data.extraDays, data.pickupTimes, data.dayLocks, data.restrictedMode, data.restrictedAllowed);
+    if(lastSignature !== null && sig !== lastSignature){
+      showUpdateBanner();
+    }
+  }catch(e){ /* ignore — we'll catch up on the next poll */ }
+}
+function showUpdateBanner(){
+  const el = document.getElementById('updateBanner');
+  el.style.display = 'flex';
+  el.className = 'update-banner';
+  el.innerHTML = `<span>🔄 New sign-up activity</span><span class="refresh-label">Refresh</span>`;
+  el.onclick = refresh;
+}
+function hideUpdateBanner(){
+  document.getElementById('updateBanner').style.display = 'none';
+}
+
+// ==========================================================================
+// EVENTS (one-off carpools, e.g. competitions) — a banner on the main page
+// links into a self-contained sign-up view for the event, separate from the
+// Mon–Sun weekly practices.
+// ==========================================================================
+
+function todayStr(){
+  const d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+}
+function formatEventDateLabel(eventDate){
+  try{
+    const d = new Date(eventDate + 'T00:00:00');
+    return d.toLocaleDateString(undefined, {weekday:'long', month:'long', day:'numeric'});
+  }catch(e){ return eventDate; }
+}
+function upcomingEvents(){
+  // Public-facing: what shows on the banner and in the sign-up flow.
+  const today = todayStr();
+  return (events||[]).filter(ev=>ev.eventDate >= today && !ev.hidden && !ev.archived).sort((a,b)=> a.eventDate < b.eventDate ? -1 : (a.eventDate > b.eventDate ? 1 : 0));
+}
+function adminActiveEvents(){
+  // Admin-facing "Admin — comps" list: every comp that isn't archived,
+  // upcoming or past — a comp never moves on its own just because its date
+  // passed (some comps run multiple days), only when an admin archives it.
+  // Includes hidden comps too, so an admin can still find and un-hide them.
+  return (events||[]).filter(ev=>!ev.archived).sort((a,b)=> a.eventDate < b.eventDate ? -1 : (a.eventDate > b.eventDate ? 1 : 0));
+}
+function renderEventBanner(){
+  const el = document.getElementById('eventBanner');
+  if(!el) return;
+  if(viewingEvent){ el.style.display = 'none'; return; }
+  const upcoming = upcomingEvents();
+  if(!upcoming.length){ el.style.display = 'none'; return; }
+  el.style.display = 'block';
+  const first = upcoming[0];
+  const rest = upcoming.length - 1;
+  el.innerHTML = `
+    <div class="event-banner-card" data-open-event="${escapeAttr(first.id)}">
+      <div>
+        <div class="ebc-title">🏆 ${escapeHtml(first.name)}</div>
+        <div class="ebc-sub">${escapeHtml(formatEventDateLabel(first.eventDate))}${first.pickupTime ? ' · car leaves at ' + escapeHtml(formatTime12h(first.pickupTime)) : ''} · Tap to sign up</div>
+      </div>
+      <div class="ebc-arrow">→</div>
+    </div>
+    ${rest > 0 ? `<div class="event-banner-more" id="eventBannerMoreLink">+${rest} more upcoming comp${rest===1?'':'s'}</div>` : ''}
+    ${eventBannerOpen ? `<div style="margin:-8px 0 16px;">${upcoming.slice(1).map(ev=>`
+      <div class="event-banner-card" style="margin-bottom:8px;" data-open-event="${escapeAttr(ev.id)}">
+        <div>
+          <div class="ebc-title">🏆 ${escapeHtml(ev.name)}</div>
+          <div class="ebc-sub">${escapeHtml(formatEventDateLabel(ev.eventDate))}${ev.pickupTime ? ' · car leaves at ' + escapeHtml(formatTime12h(ev.pickupTime)) : ''}</div>
+        </div>
+        <div class="ebc-arrow">→</div>
+      </div>`).join('')}</div>` : ''}
+  `;
+  el.querySelectorAll('[data-open-event]').forEach(card=>{
+    card.addEventListener('click', ()=> openEvent(card.dataset.openEvent));
+  });
+  const moreLink = document.getElementById('eventBannerMoreLink');
+  if(moreLink) moreLink.addEventListener('click', ()=>{ eventBannerOpen = !eventBannerOpen; renderEventBanner(); });
+}
+
+async function openEvent(eventId){
+  viewingEvent = eventId;
+  if(pollTimer){ clearInterval(pollTimer); pollTimer = null; }
+  document.getElementById('weeklyView').style.display = 'none';
+  document.getElementById('eventView').style.display = 'block';
+  document.getElementById('eventBanner').style.display = 'none';
+  if(me && me.isAdmin) renderAdminPanel();
+  await refreshEvent();
+  eventPollTimer = setInterval(checkForEventUpdates, 5000);
+}
+function closeEvent(){
+  viewingEvent = null;
+  activeEvent = null;
+  eventRows = [];
+  if(eventPollTimer){ clearInterval(eventPollTimer); eventPollTimer = null; }
+  document.getElementById('eventView').style.display = 'none';
+  document.getElementById('weeklyView').style.display = 'block';
+  renderEventBanner();
+  if(me && me.isAdmin) renderAdminPanel();
+  pollTimer = setInterval(checkForUpdates, 5000);
+  refresh();
+}
+
+async function refreshEvent(){
+  try{
+    const data = await callServer('getEventData', [viewingEvent]);
+    if(!data || data.error){
+      alert((data && data.error) || 'Could not load that comp.');
+      closeEvent();
+      return;
+    }
+    activeEvent = {id: data.id, name: data.name, eventDate: data.eventDate, pickupTime: data.pickupTime, locked: !!data.locked};
+    eventRows = data.rows || [];
+    if(me) me.isAdmin = data.isAdmin;
+    lastEventSignature = signatureOf(eventRows, [], [], {}, activeEvent.locked, false, true);
+    hideUpdateBanner();
+    renderEventView();
+    if(me && me.isAdmin) renderAdminPanel();
+  }catch(e){
+    document.getElementById('eventLocations').innerHTML =
+      `<div class="loading" style="color:var(--red);">Couldn't load: ${escapeHtml((e && e.message) || String(e))}</div>`;
+  }
+}
+async function checkForEventUpdates(){
+  if(!viewingEvent) return;
+  try{
+    const data = await callServer('getEventData', [viewingEvent]);
+    if(!data || data.error) return;
+    const sig = signatureOf(data.rows || [], [], [], {}, !!data.locked, false, true);
+    if(lastEventSignature !== null && sig !== lastEventSignature){
+      showUpdateBanner();
+      document.getElementById('updateBanner').onclick = refreshEvent;
+    }
+  }catch(e){}
+}
+
+function renderEventView(){
+  if(!activeEvent) return;
+  document.getElementById('adminBadge').style.display = me.isAdmin ? 'inline-block' : 'none';
+  document.getElementById('adminSection').style.display = me.isAdmin ? 'block' : 'none';
+  if(me.isAdmin && admins.length === 0){ loadAdmins(); }
+  if(me.isAdmin && !allProfilesLoaded){ loadAllProfiles(); }
+  const blocked = activeEvent.locked;
+  document.getElementById('eventTitleLabel').textContent = activeEvent.name;
+  document.getElementById('eventDateLabel').textContent = formatEventDateLabel(activeEvent.eventDate) +
+    (activeEvent.pickupTime ? ' · ' + formatTime12h(activeEvent.pickupTime) : '');
+  document.getElementById('eventLockBanner').style.display = blocked ? 'block' : 'none';
+  document.getElementById('roleBar').style.display = blocked ? 'none' : 'flex';
+  // Admin controls for this event (lock/emails, add to manifest, bulk clear)
+  // live in the shared "Admin tools" section below, not up here — see
+  // renderAdminPanel(), which puts them first whenever an event is open.
+
+  const wrap = document.getElementById('eventLocations');
+  wrap.innerHTML = '';
+
+  // Combined driver list across BOTH campuses — admin-only, used by the
+  // "Move into another car" dropdown so a driver (or their whole car) can
+  // be consolidated into any other car, same campus or not, to cut down on
+  // how many cars need reimbursing at a comp.
+  const allCarsByLoc = {};
+  LOCATIONS.forEach(l=>{
+    const d = eventRows.filter(r=>r.location===l.key && r.role==='driver').sort(sortByTs);
+    const ri = eventRows.filter(r=>r.location===l.key && r.role==='rider').sort(sortByTs);
+    allCarsByLoc[l.key] = computeAssignments(d, ri).cars;
+  });
+
+  LOCATIONS.forEach(loc=>{
+    const drivers = eventRows.filter(r=>r.location===loc.key && r.role==='driver').sort(sortByTs);
+    const riders = eventRows.filter(r=>r.location===loc.key && r.role==='rider').sort(sortByTs);
+    const {cars, waiting} = computeAssignments(drivers, riders);
+    const totalSeats = drivers.reduce((a,d)=>a+(Number(d.seats)||0),0);
+    const filledSeats = cars.reduce((a,c)=>a+c.assigned.length,0);
+
+    const panel = document.createElement('div');
+    panel.className = 'loc-panel';
+
+    let gaugeHtml = '<div class="gauge">';
+    const segCount = Math.max(totalSeats, 1);
+    for(let i=0;i<segCount;i++){
+      gaugeHtml += `<div class="seg ${i<filledSeats?'filled':(totalSeats===0?'empty-driver':'')}"></div>`;
+    }
+    gaugeHtml += '</div>';
+
+    let carsHtml = '';
+    if(cars.length===0){
+      carsHtml = '<div class="empty-note">No drivers signed up yet for this pickup spot.</div>';
+    } else {
+      const eventOfficialTime = activeEvent.pickupTime;
+      cars.forEach(car=>{
+        const seats = Number(car.seats)||0;
+        const isHybrid = !!car.hybridSecondLocation;
+        const ownTimeLabel = isHybrid && eventOfficialTime ? formatTime12h(offsetTimeMinutes(eventOfficialTime, -HYBRID_OFFSET_MINUTES)) : '';
+        const otherTimeLabel = isHybrid && eventOfficialTime ? formatTime12h(eventOfficialTime) : '';
+        let pips = '';
+        for(let i=0;i<seats;i++) pips += `<div class="pip ${i<car.assigned.length?'on':''}"></div>`;
+        const otherLoc = LOCATIONS.find(l=>l.key!==car.location);
+        let ridersHtml = car.assigned.map(r=>{
+          const stopTag = (isHybrid && r.hybridStop) ? `<span class="note-tag" style="color:var(--blue);font-family:'JetBrains Mono',monospace;font-size:10px;" title="Picked up at ${escapeAttr(locationLabel(r.hybridStop))}">📍${escapeHtml(locationLabel(r.hybridStop))}</span>` : '';
+          const rOtherLoc = LOCATIONS.find(l=>l.key!==r.location);
+          return `<div class="rider-chip">${escapeHtml(r.name)}${r.phone ? `<span class="phone">${escapeHtml(r.phone)}</span>` : ''}${stopTag}${r.notes ? `<span class="note-tag" title="${escapeAttr(r.notes)}">📝</span>` : ''}${me.isAdmin ? eventMoveSelectHtml(r, cars, car.email) : ''}${canRemove(r.email) ? `<span class="switch-campus-x" data-switch-event-loc="${r.location}" data-switch-event-email="${r.email}" data-switch-event-to="${rOtherLoc.key}" title="Switch to ${rOtherLoc.label}">⇄</span>` : ''}${canRemove(r.email) ? `<span class="remove-x" data-event-remove-loc="${r.location}" data-event-remove-role="${r.role}" data-event-remove-email="${r.email}">×</span>` : ''}</div>`;
+        }).join('');
+        const openSeats = seats - car.assigned.length;
+        const reservedOpen = Math.min(Number(car.reservedSeats)||0, openSeats);
+        const trulyOpen = openSeats - reservedOpen;
+        for(let i=0;i<reservedOpen;i++){
+          ridersHtml += `<div class="rider-chip open reserved">🔖 reserved${me.isAdmin ? `<span class="remove-x" data-event-release-loc="${car.location}" data-event-release-driver="${car.email}">×</span>` : ''}</div>`;
+        }
+        for(let i=0;i<trulyOpen;i++) ridersHtml += `<div class="rider-chip open">open seat</div>`;
+        const adminEditKey = 'ev|' + viewingEvent + '|' + car.location + '|' + car.email;
+        const otherDriverOptions = LOCATIONS.flatMap(l=>
+          allCarsByLoc[l.key].filter(c=>c.email!==car.email).map(c=>({...c, locLabel: l.label}))
+        );
+        carsHtml += `
+          <div class="car-card">
+            <div class="car-top">
+              <div class="car-name">🚗 ${escapeHtml(car.name)}${car.phone ? `<span class="phone">${escapeHtml(car.phone)}</span>` : ''}</div>
+              <div class="car-seats">${pips}</div>
+            </div>
+            <div class="car-sub">
+              ${car.car ? `<div class="car-vehicle">🚙 ${escapeHtml(car.car)}</div>` : ''}
+              <div class="car-controls">
+              ${me.isAdmin && otherDriverOptions.length ? `
+                <select class="move-select driver-move-select" data-move-driver-loc="${car.location}" data-move-driver-email="${car.email}" data-move-driver-name="${escapeAttr(car.name)}">
+                  <option value="" selected>Move to…</option>
+                  ${otherDriverOptions.map(c=>`<option value="${escapeAttr(c.email)}">${escapeHtml(c.name)} — ${c.locLabel} (${c.assigned.length}/${c.seats})</option>`).join('')}
+                </select>` : ''}
+              ${me.isAdmin ? `<span class="driver-remove" data-admin-edit-driver="${adminEditKey}">edit</span>` : ''}
+              ${canRemove(car.email) ? `<span class="driver-remove" data-switch-event-loc="${car.location}" data-switch-event-email="${car.email}" data-switch-event-to="${otherLoc.key}" title="Relocate car to ${otherLoc.label}">⇄ ${otherLoc.label.replace(' Campus','')}</span>` : ''}
+              ${canRemove(car.email) ? `<span class="driver-remove" data-event-remove-loc="${car.location}" data-event-remove-role="${car.role}" data-event-remove-email="${car.email}">remove</span>` : ''}
+              </div>
+            </div>
+            ${adminEditingDriver.has(adminEditKey) ? `
+            <div class="add-row">
+              <select class="seats-input" data-admin-edit-seats-input="${adminEditKey}">
+                ${[1,2,3,4,5,6,7,8].map(n=>`<option value="${n}" ${n===seats?'selected':''}>${n} seat${n===1?'':'s'}</option>`).join('')}
+              </select>
+            </div>
+            <div class="add-row">
+              <input type="text" class="note-input" data-admin-edit-note-input="${adminEditKey}" maxlength="200" placeholder="Note (optional)" value="${escapeAttr(car.notes||'')}" />
+            </div>
+            <div class="add-row">
+              <button class="btn" data-admin-save-event-driver="${adminEditKey}" data-admin-save-loc="${car.location}" data-admin-save-email="${car.email}">Save</button>
+              <button class="btn secondary" data-admin-cancel-driver="${adminEditKey}">Cancel</button>
+            </div>` : ''}
+            ${isHybrid ? `<div class="car-note" style="color:var(--blue);">🔀 Hybrid pickup — leaves ${escapeHtml(loc.label)} at ${escapeHtml(ownTimeLabel)}, then ${escapeHtml(locationLabel(car.hybridSecondLocation))} at ${escapeHtml(otherTimeLabel)}</div>` : ''}
+            ${car.notes ? `<div class="car-note">📝 ${escapeHtml(car.notes)}</div>` : ''}
+            <div class="car-riders">${ridersHtml || ''}</div>
+          </div>`;
+      });
+    }
+
+    let waitingHtml = '';
+    if(waiting.length){
+      waitingHtml += '<div class="section-label">Waitlist — backfills automatically as drivers sign up</div>';
+      waiting.forEach((r, idx)=>{
+        const rOtherLoc = LOCATIONS.find(l=>l.key!==r.location);
+        waitingHtml += `
+          <div class="waiting-row">
+            <span>#${idx+1} · ${escapeHtml(r.name)}</span>
+            <span style="display:flex;align-items:center;gap:10px;">
+              <span class="tag">waitlisted</span>
+              ${me.isAdmin ? eventMoveSelectHtml(r, cars) : ''}
+              ${canRemove(r.email) ? `<span class="switch-campus-x" data-switch-event-loc="${r.location}" data-switch-event-email="${r.email}" data-switch-event-to="${rOtherLoc.key}" title="Switch to ${rOtherLoc.label}">⇄</span>` : ''}
+              ${canRemove(r.email) ? `<span class="remove-x" data-event-remove-loc="${r.location}" data-event-remove-role="${r.role}" data-event-remove-email="${r.email}">×</span>` : ''}
+            </span>
+          </div>`;
+      });
+    }
+
+    const myDriverEntry = drivers.find(d=>d.email===me.email);
+    const myRiderEntry = riders.find(r=>r.email===me.email);
+    const myEventEntryElsewhere = eventRows.find(r=>r.email===me.email && !(r.location===loc.key && r.role===myRole));
+    let signupHtml = '';
+    if(!nameIsValid(me.name) || !phoneIsValid(me.phone)){
+      signupHtml = '';
+    } else if(!myRole){
+      signupHtml = '';
+    } else if(myEventEntryElsewhere){
+      const whereLabel = myEventEntryElsewhere.location==='north' ? 'North Campus' : 'Central Campus';
+      signupHtml = `<div class="role-hint">You're already signed up as a ${escapeHtml(myEventEntryElsewhere.role)} at ${whereLabel} for this comp. Cancel that first to switch here.</div>`;
+    } else if(myRole==='driver'){
+      const eventEditKey = viewingEvent + '|' + loc.key;
+      signupHtml = myDriverEntry ? (
+        editingSeats.has(eventEditKey) ? `
+          <div class="add-row">
+            <select class="seats-input" data-event-edit-seats-input="${eventEditKey}">
+              ${[1,2,3,4,5,6,7,8].map(n=>`<option value="${n}" ${n===Number(myDriverEntry.seats)?'selected':''}>${n} seat${n===1?'':'s'}</option>`).join('')}
+            </select>
+          </div>
+          <div class="add-row">
+            <input type="text" class="note-input" data-event-edit-note-input="${eventEditKey}" maxlength="200" placeholder="Note (optional) — e.g. leaving 10 min late" value="${escapeAttr(myDriverEntry.notes||'')}" />
+          </div>
+          <div class="add-row">
+            <button class="btn" data-event-save-seats="${loc.key}" data-event-edit-key="${eventEditKey}">Update</button>
+            <button class="btn secondary" data-event-cancel-edit-seats="${eventEditKey}">Cancel</button>
+          </div>` : `
+          <div class="you-status driver" style="flex-wrap:wrap;">
+            <span>You're driving — offering ${myDriverEntry.seats} seat${Number(myDriverEntry.seats)===1?'':'s'}${myDriverEntry.notes ? `<br><span style="font-style:italic;color:var(--text-dim);font-weight:400;">${escapeHtml(myDriverEntry.notes)}</span>` : ''}</span>
+            <span style="display:flex;align-items:center;gap:12px;">
+              ${blocked ? '' : `<span class="cancel" data-event-edit-seats="${eventEditKey}">Edit</span>`}
+              ${blocked ? '' : `<span class="cancel" data-event-remove-loc="${loc.key}" data-event-remove-role="driver" data-event-remove-email="${me.email}">Cancel</span>`}
+            </span>
+          </div>`
+      ) : blocked ? '' : `
+          <div class="add-row">
+            <select class="seats-input" data-event-driver-seats="${loc.key}">
+              <option value="" disabled selected>Seats</option>
+              ${[1,2,3,4,5,6,7,8].map(n=>`<option value="${n}">${n} seat${n===1?'':'s'}</option>`).join('')}
+            </select>
+          </div>
+          <div class="add-row">
+            <input type="text" class="note-input" data-event-driver-note="${loc.key}" maxlength="200" placeholder="Note (optional) — e.g. leaving 10 min late" />
+          </div>
+          <div class="add-row">
+            <button class="btn" data-event-add-driver="${loc.key}" disabled style="opacity:0.5;cursor:not-allowed;">I'm driving from here</button>
+          </div>`;
+    } else if(myRole==='rider'){
+      const waitlistPos = waiting.findIndex(r=>r.email===me.email);
+      if(myRiderEntry){
+        signupHtml = `
+          <div class="you-status" style="flex-wrap:wrap;">
+            <span>${waitlistPos >= 0 ? `You're #${waitlistPos+1} on the waitlist — you'll auto-fill the next open seat` : "You're signed up for a ride"}${myRiderEntry.notes ? `<br><span style="font-style:italic;color:var(--text-dim);">${escapeHtml(myRiderEntry.notes)}</span>` : ''}</span>
+            ${blocked ? '' : `<span class="cancel" data-event-remove-loc="${loc.key}" data-event-remove-role="rider" data-event-remove-email="${me.email}">Cancel</span>`}
+          </div>`;
+      } else if(blocked){
+        signupHtml = '';
+      } else {
+        signupHtml = `
+          ${cars.length > 1 || cars.some(c=>(Number(c.reservedSeats)||0) > 0) ? `
+          <div class="add-row">
+            <select class="seats-input" data-event-driver-pick="${loc.key}">
+              <option value="">No preference (auto-assign)</option>
+              ${cars.map(c=>`<option value="${escapeAttr(c.email)}">${escapeHtml(c.name)} — ${c.assigned.length}/${c.seats}${c.assigned.length>=c.seats ? ' (full)':''}${(Number(c.reservedSeats)||0) > 0 ? ' — has a reserved seat' : ''}</option>`).join('')}
+            </select>
+          </div>` : ''}
+          <div class="add-row">
+            <input type="text" class="note-input" data-event-rider-note="${loc.key}" maxlength="200" placeholder="Note (optional) — e.g. can't arrive until later" />
+          </div>
+          <div class="add-row">
+            <button class="btn secondary" data-event-add-rider="${loc.key}">Request a seat here</button>
+          </div>`;
+      }
+    }
+
+    panel.innerHTML = `
+      <div class="loc-head">
+        <h2>${loc.label}</h2>
+        <div class="loc-count">${filledSeats}/${totalSeats||0} seats filled</div>
+      </div>
+      <div class="loc-subheading">${loc.subheading}${activeEvent.pickupTime ? ` — Car leaves at ${formatTime12h(activeEvent.pickupTime)}` : ''}</div>
+      ${gaugeHtml}
+      <div class="section-label">Drivers</div>
+      ${carsHtml}
+      ${waitingHtml}
+      ${signupHtml}
+    `;
+    wrap.appendChild(panel);
+  });
+
+  wrap.querySelectorAll('[data-event-remove-email]').forEach(el=>{
+    el.addEventListener('click', ()=> withBusy(el, '…', async ()=>{
+      await callServer('removeEventSignup', [viewingEvent, el.dataset.eventRemoveLoc, el.dataset.eventRemoveRole, el.dataset.eventRemoveEmail]);
+      await refreshEvent();
+    }));
+  });
+  wrap.querySelectorAll('[data-event-add-driver]').forEach(el=>{
+    el.addEventListener('click', ()=> withBusy(el, 'Signing up…', ()=> addEventDriver(el.dataset.eventAddDriver)));
+  });
+  wrap.querySelectorAll('[data-event-driver-seats]').forEach(sel=>{
+    sel.addEventListener('change', ()=>{
+      const btn = wrap.querySelector(`[data-event-add-driver="${sel.dataset.eventDriverSeats}"]`);
+      if(!btn) return;
+      const val = parseInt(sel.value, 10);
+      const ok = val >= 1 && val <= 8;
+      btn.disabled = !ok;
+      btn.style.opacity = ok ? '1' : '0.5';
+      btn.style.cursor = ok ? 'pointer' : 'not-allowed';
+    });
+  });
+  wrap.querySelectorAll('[data-event-add-rider]').forEach(el=>{
+    el.addEventListener('click', ()=> withBusy(el, 'Signing up…', ()=> addEventRider(el.dataset.eventAddRider)));
+  });
+  wrap.querySelectorAll('[data-event-edit-seats]').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      editingSeats.add(el.dataset.eventEditSeats);
+      renderEventView();
+    });
+  });
+  wrap.querySelectorAll('[data-event-cancel-edit-seats]').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      editingSeats.delete(el.dataset.eventCancelEditSeats);
+      renderEventView();
+    });
+  });
+  wrap.querySelectorAll('[data-event-save-seats]').forEach(el=>{
+    el.addEventListener('click', ()=> withBusy(el, '…', async ()=>{
+      const loc = el.dataset.eventSaveSeats;
+      const editKey = el.dataset.eventEditKey;
+      const sel = document.querySelector(`[data-event-edit-seats-input="${editKey}"]`);
+      const seats = parseInt(sel.value, 10);
+      if(!seats || seats < 1 || seats > 8){ throw new Error('Choose a number of seats (1-8).'); }
+      const noteInput = document.querySelector(`[data-event-edit-note-input="${editKey}"]`);
+      const notes = noteInput ? noteInput.value.trim() : '';
+      await callServer('addEventSignup', [viewingEvent, loc, 'driver', seats, '', notes]);
+      editingSeats.delete(editKey);
+      await refreshEvent();
+    }));
+  });
+  wrap.querySelectorAll('[data-admin-edit-driver]').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      adminEditingDriver.add(el.dataset.adminEditDriver);
+      renderEventView();
+    });
+  });
+  wrap.querySelectorAll('[data-admin-cancel-driver]').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      adminEditingDriver.delete(el.dataset.adminCancelDriver);
+      renderEventView();
+    });
+  });
+  wrap.querySelectorAll('[data-admin-save-event-driver]').forEach(el=>{
+    el.addEventListener('click', ()=> withBusy(el, '…', async ()=>{
+      const editKey = el.dataset.adminSaveEventDriver;
+      const loc = el.dataset.adminSaveLoc;
+      const driverEmail = el.dataset.adminSaveEmail;
+      const sel = document.querySelector(`[data-admin-edit-seats-input="${editKey}"]`);
+      const seats = parseInt(sel.value, 10);
+      if(!seats || seats < 1 || seats > 8){ throw new Error('Choose a number of seats (1-8).'); }
+      const noteInput = document.querySelector(`[data-admin-edit-note-input="${editKey}"]`);
+      const notes = noteInput ? noteInput.value.trim() : '';
+      await callServer('adminEditEventDriverSeats', [viewingEvent, loc, driverEmail, seats, notes]);
+      adminEditingDriver.delete(editKey);
+      await refreshEvent();
+    }));
+  });
+  wrap.querySelectorAll('.event-move-select').forEach(sel=>{
+    sel.addEventListener('change', async ()=>{
+      if(isBusy) return;
+      isBusy = true;
+      sel.disabled = true;
+      try{
+        await callServer('adminMoveEventRider', [viewingEvent, sel.dataset.moveLoc, sel.dataset.moveRider, sel.dataset.moveFrom, sel.value]);
+        await refreshEvent();
+      } catch(e){
+        alert(e.message || 'Could not move rider.');
+      } finally {
+        isBusy = false;
+      }
+    });
+  });
+  wrap.querySelectorAll('[data-move-driver-email]').forEach(sel=>{
+    sel.addEventListener('change', async ()=>{
+      if(!sel.value) return;
+      if(isBusy) return;
+      const targetOption = sel.options[sel.selectedIndex].textContent;
+      const ok = confirm(`Move ${sel.dataset.moveDriverName} into ${targetOption}? Their current riders come with them (waitlisted at that campus if there's no room), and they'll stop driving.`);
+      if(!ok){ sel.value = ''; return; }
+      isBusy = true;
+      sel.disabled = true;
+      try{
+        await callServer('adminConvertEventDriverToRider', [viewingEvent, sel.dataset.moveDriverEmail, sel.value]);
+        await refreshEvent();
+      } catch(e){
+        alert(e.message || 'Could not move that driver.');
+        sel.value = '';
+      } finally {
+        isBusy = false;
+      }
+    });
+  });
+  wrap.querySelectorAll('[data-event-release-driver]').forEach(el=>{
+    el.addEventListener('click', ()=> withBusy(el, '…', async ()=>{
+      await callServer('adminReleaseEventReservedSeat', [viewingEvent, el.dataset.eventReleaseLoc, el.dataset.eventReleaseDriver]);
+      await refreshEvent();
+    }));
+  });
+  wrap.querySelectorAll('[data-switch-event-email]').forEach(el=>{
+    el.addEventListener('click', ()=> withBusy(el, '…', async ()=>{
+      const targetEmail = el.dataset.switchEventEmail;
+      const isMine = me && targetEmail === me.email;
+      if(isMine){
+        await callServer('changeMyEventCampus', [viewingEvent, el.dataset.switchEventTo]);
+      } else {
+        await callServer('adminChangeEventCampus', [viewingEvent, targetEmail, el.dataset.switchEventTo]);
+      }
+      await refreshEvent();
+    }));
+  });
+}
+function eventMoveSelectHtml(rider, cars, currentCarEmail){
+  currentCarEmail = currentCarEmail || '';
+  const options = [`<option value="" ${!currentCarEmail ? 'selected':''}>No preference</option>`]
+    .concat(cars.map(c=>`<option value="${escapeAttr(c.email)}" ${c.email===currentCarEmail ? 'selected':''}>${escapeHtml(c.name)}</option>`));
+  return `<select class="move-select event-move-select" data-move-loc="${rider.location}" data-move-rider="${escapeAttr(rider.email)}" data-move-from="${escapeAttr(currentCarEmail)}">${options.join('')}</select>`;
+}
+
+function personSortKey(p){ return (p.name || p.email || '').toLowerCase(); }
+function personLabel(p){ return p.email + (p.name ? ' (' + p.name + ')' : ''); }
+async function loadAdmins(){
+  try{
+    admins = await callServer('listAdmins');
+    admins.sort((a,b)=> personSortKey(a).localeCompare(personSortKey(b)));
+    renderAdminPanel();
+  }catch(e){}
+}
+async function loadRestrictedList(){
+  try{
+    restrictedList = await callServer('listRestrictedEmails');
+    restrictedList.sort((a,b)=> personSortKey(a).localeCompare(personSortKey(b)));
+  }catch(e){ restrictedList = []; }
+  restrictedListLoaded = true;
+  renderAdminPanel();
+}
+async function loadHybridDrivers(){
+  try{
+    hybridDrivers = await callServer('listHybridDrivers');
+  }catch(e){ hybridDrivers = []; }
+  hybridDriversLoaded = true;
+  renderAdminPanel();
+}
+async function loadAllProfiles(){
+  try{
+    allProfiles = await callServer('listAllProfiles');
+  }catch(e){ allProfiles = []; }
+  allProfilesLoaded = true;
+  renderAdminPanel();
+}
+async function loadPastWeeks(){
+  try{
+    pastWeeks = await callServer('listPastWeeks');
+  }catch(e){ pastWeeks = []; }
+  pastWeeksLoaded = true;
+  renderAdminPanel();
+}
+function formatWeekKeyLabel(weekKey){
+  try{
+    const d = new Date(weekKey + 'T00:00:00');
+    return 'Week of ' + d.toLocaleDateString('en-US', {month:'long', day:'numeric', year:'numeric'});
+  }catch(e){ return weekKey; }
+}
+function renderAdminPanel(){
+  const wrap = document.getElementById('adminPanelWrap');
+  if(!me.isAdmin){ wrap.innerHTML=''; return; }
+  const hidden = me.hiddenDays || [];
+  const extra = me.extraDays || [];
+  // While an event is open, its own admin tools come first — lock/emails,
+  // adding someone to its manifest, and clearing it — ahead of the general
+  // (mostly weekly) admin panels below.
+  const eventPanelsHtml = (viewingEvent && activeEvent) ? `
+    <div class="admin-panel">
+      <h3>Admin — this comp</h3>
+      <div class="sub">
+        ${activeEvent.locked ? '🔒 Sign-ups are currently locked for this comp.' : '🔓 Sign-ups are currently open for this comp.'}
+        Comps don't auto-lock — lock it yourself when the roster's ready.
+      </div>
+      <div class="admin-add">
+        ${activeEvent.locked
+          ? `<button class="btn secondary" id="unlockEventBtn">Unlock this comp</button>`
+          : `<button class="btn secondary" id="lockEventBtn">Lock this comp now</button>`}
+        <button class="btn secondary" id="sendEventEmailsNowBtn">Send manifest emails now</button>
+        <button class="btn secondary" id="sendEventTestEmailBtn">Send me a test email</button>
+      </div>
+    </div>
+    <div class="admin-panel">
+      <h3>Admin — add someone to this comp's manifest</h3>
+      <div class="sub">Add or update a sign-up on someone else's behalf for ${escapeHtml(activeEvent.name)} — e.g. finalizing it by hand, or a late addition even while it's locked. If they've signed up before, their name/phone/car auto-fill from their saved profile; either way, what you enter here is saved back to their profile too.</div>
+      <div class="admin-add">
+        <input type="text" id="addEventRosterEmail" placeholder="them@umich.edu" list="addEventRosterEmailList" autocomplete="off" />
+        <datalist id="addEventRosterEmailList">
+          ${(allProfiles||[]).map(p=>`<option value="${escapeAttr(p.name ? (p.email + ' (' + p.name + ')') : p.email)}"></option>`).join('')}
+        </datalist>
+      </div>
+      <div class="admin-add">
+        <input type="text" id="addEventRosterName" placeholder="Full name" list="addEventRosterNameList" autocomplete="off" />
+        <datalist id="addEventRosterNameList">
+          ${(allProfiles||[]).map(p=>`<option value="${escapeAttr(p.name)}"></option>`).join('')}
+        </datalist>
+        <input type="tel" id="addEventRosterPhone" placeholder="(xxx) xxx-xxxx" />
+      </div>
+      <div class="admin-add">
+        <select id="addEventRosterLocation">
+          ${LOCATIONS.map(l=>`<option value="${l.key}">${l.label}</option>`).join('')}
+        </select>
+        <select id="addEventRosterRole">
+          <option value="driver">Driver</option>
+          <option value="rider">Rider</option>
+        </select>
+      </div>
+      <div class="admin-add" id="addEventRosterDriverRow">
+        <select id="addEventRosterSeats">
+          <option value="" disabled selected>Seats</option>
+          ${[1,2,3,4,5,6,7,8].map(n=>`<option value="${n}">${n} seat${n===1?'':'s'}</option>`).join('')}
+        </select>
+        <input type="text" id="addEventRosterCar" maxlength="100" placeholder="Car (optional)" />
+      </div>
+      <div class="admin-add" id="addEventRosterRiderRow" style="display:none;">
+        <select id="addEventRosterDriverChoice">
+          <option value="">No preference (auto-assign)</option>
+        </select>
+      </div>
+      <div class="admin-add">
+        <input type="text" id="addEventRosterNotes" maxlength="200" placeholder="Note (optional)" />
+      </div>
+      <div class="admin-add">
+        <button class="btn" id="addEventRosterBtn">Add to manifest</button>
+      </div>
+    </div>
+    <div class="admin-panel">
+      <h3>Admin — bulk actions (this comp)</h3>
+      <div class="sub">Clear every driver and rider sign-up for ${escapeHtml(activeEvent.name)} in one go — useful if plans changed. This can't be undone.</div>
+      <button class="btn secondary" id="clearEventBtn" style="border-color:var(--red);color:var(--red);">Clear all sign-ups for this comp</button>
+    </div>
+  ` : '';
+  wrap.innerHTML = eventPanelsHtml + `
+    <div class="admin-panel">
+      <h3>Admin — this week's practice days</h3>
+      <div class="sub">Tap a day to add it, or the × to remove it. Only affects this week.</div>
+      <div class="week-grid">
+        ${WEEKDAY_ORDER.map(d=>{
+          const isBase = BASE_DAYS.includes(d);
+          const isHiddenBase = isBase && hidden.includes(d);
+          const isExtra = extra.includes(d);
+          const active = (isBase && !isHiddenBase) || isExtra;
+          const dateLabel = (me.weekDates && me.weekDates[d]) || '';
+          return `
+            <div class="week-cell ${active ? 'active' : ''}" data-day-cell="${d}" data-active="${active}">
+              ${active ? `<span class="week-cell-x" data-day-remove="${d}" data-day-type="${isBase ? 'base' : 'extra'}">×</span>` : ''}
+              <div class="week-cell-day">${d.slice(0,3).toUpperCase()}</div>
+              <div class="week-cell-date">${dateLabel}</div>
+            </div>`;
+        }).join('')}
+      </div>
+      <div class="sub" style="margin-top:16px;">Pickup times — shown under each pickup spot on that day. Applies every week this day is active.</div>
+      ${visibleDays().map(d=>`
+        <div class="admin-row">
+          <span>${d.key}</span>
+          <span style="display:flex;align-items:center;gap:8px;">
+            <input type="time" class="time-input" id="time-${d.key}" value="${(me.pickupTimes && me.pickupTimes[d.key]) || ''}" />
+            <button class="btn secondary" data-save-time="${d.key}">Save</button>
+          </span>
+        </div>`).join('')}
+    </div>
+    <div class="admin-panel">
+      <h3>Admin — lock &amp; emails</h3>
+      <div class="sub">Rolling, per day — each day locks and emails its own manifest on its own schedule instead of all at once.</div>
+      ${visibleDays().map(d=>{
+        const dl = (me.dayLocks && me.dayLocks[d.key]) || {locked:false, emailsSent:false};
+        const sched = (me.lockSchedules && me.lockSchedules[d.key]) || {lockDay: d.key, lockTime: '20:00'};
+        return `
+        <div class="day-lock-row">
+          <div class="day-lock-top">
+            <span>${dl.locked ? '🔒' : '🔓'} <strong>${d.key}</strong> — ${dl.locked ? 'locked' : 'open'}${dl.emailsSent ? ' · emailed' : ''}</span>
+            ${dl.locked
+              ? `<button class="btn secondary" data-unlock-day="${d.key}">Unlock</button>`
+              : `<button class="btn secondary" data-lock-day="${d.key}">Lock now</button>`}
+          </div>
+          <div class="day-lock-schedule">
+            <span class="sub" style="margin:0;">Auto-lock</span>
+            <select data-lock-schedule-day-select="${d.key}">
+              ${WEEKDAY_ORDER.map(wd=>`<option value="${wd}" ${wd===sched.lockDay?'selected':''}>${wd}</option>`).join('')}
+            </select>
+            <input type="time" class="time-input" data-lock-schedule-time-input="${d.key}" value="${sched.lockTime}" />
+            <button class="btn secondary" data-save-lock-schedule="${d.key}">Save</button>
+          </div>
+        </div>`;
+      }).join('')}
+      <div class="sub" style="margin-top:14px;">Manual send (uncheck days already passed if you're resending midweek):</div>
+      <div class="admin-add" style="margin-bottom:6px;">
+        <button class="btn secondary" id="sendEmailsNowBtn">Send manifest emails now</button>
+        <button class="btn secondary" id="sendTestEmailBtn">Send me a test email</button>
+      </div>
+      <div class="email-day-row" id="emailDaysRow">
+        ${visibleDays().map(d=>`
+          <label style="display:flex;align-items:center;gap:5px;font-size:12.5px;color:var(--text-dim);cursor:pointer;">
+            <input type="checkbox" class="email-day-check" value="${d.key}" checked /> ${d.key.slice(0,3)}
+          </label>`).join('')}
+      </div>
+      <div class="sub" style="margin-top:14px;">Emails come from the club account. Set the name people see and where replies go (update this when officers change):</div>
+      <div class="admin-add">
+        <input type="text" id="mailSenderName" placeholder="Sender name" value="${escapeAttr((me.mail && me.mail.senderName) || '')}" />
+        <input type="text" id="mailReplyTo" placeholder="Replies go to (uniqname or email)" value="${escapeAttr((me.mail && me.mail.replyTo) || '')}" />
+        <button class="btn secondary" id="mailSaveBtn">Save</button>
+      </div>
+    </div>
+    <div class="admin-panel">
+      <h3>Admin — bulk actions</h3>
+      <div class="sub">Clear every driver and rider sign-up for the current week in one go — useful if plans changed and people need to re-sign-up from scratch. This can't be undone.</div>
+      <button class="btn secondary" id="clearWeekBtn" style="border-color:var(--red);color:var(--red);">Clear all sign-ups this week</button>
+    </div>
+    <div class="admin-panel">
+      <h3>Admin — add someone to the manifest</h3>
+      <div class="sub">Add or update a sign-up on someone else's behalf — e.g. finalizing the manifest by hand, or adding a late addition even while sign-ups are locked or restricted. If they've signed up before, their name/phone/car auto-fill from their saved profile; either way, what you enter here is saved back to their profile too.</div>
+      <div class="admin-add">
+        <input type="text" id="addRosterEmail" placeholder="them@umich.edu" list="addRosterEmailList" autocomplete="off" />
+        <datalist id="addRosterEmailList">
+          ${(allProfiles||[]).map(p=>`<option value="${escapeAttr(p.name ? (p.email + ' (' + p.name + ')') : p.email)}"></option>`).join('')}
+        </datalist>
+      </div>
+      <div class="admin-add">
+        <input type="text" id="addRosterName" placeholder="Full name" list="addRosterNameList" autocomplete="off" />
+        <datalist id="addRosterNameList">
+          ${(allProfiles||[]).map(p=>`<option value="${escapeAttr(p.name)}"></option>`).join('')}
+        </datalist>
+        <input type="tel" id="addRosterPhone" placeholder="(xxx) xxx-xxxx" />
+      </div>
+      <div class="admin-add">
+        <select id="addRosterDay">
+          ${visibleDays().map(d=>`<option value="${d.key}" ${d.key===activeDay?'selected':''}>${d.key}</option>`).join('')}
+        </select>
+        <select id="addRosterLocation">
+          ${LOCATIONS.map(l=>`<option value="${l.key}">${l.label}</option>`).join('')}
+        </select>
+        <select id="addRosterRole">
+          <option value="driver">Driver</option>
+          <option value="rider">Rider</option>
+        </select>
+      </div>
+      <div class="admin-add" id="addRosterDriverRow">
+        <select id="addRosterSeats">
+          <option value="" disabled selected>Seats</option>
+          ${[1,2,3,4,5,6,7,8].map(n=>`<option value="${n}">${n} seat${n===1?'':'s'}</option>`).join('')}
+        </select>
+        <input type="text" id="addRosterCar" maxlength="100" placeholder="Car (optional)" />
+      </div>
+      <div class="admin-add" id="addRosterRiderRow" style="display:none;">
+        <select id="addRosterDriverChoice">
+          <option value="">No preference (auto-assign)</option>
+        </select>
+      </div>
+      <div class="admin-add">
+        <input type="text" id="addRosterNotes" maxlength="200" placeholder="Note (optional)" />
+      </div>
+      <div class="admin-add">
+        <button class="btn" id="addRosterBtn">Add to manifest</button>
+      </div>
+    </div>
+    <div class="admin-panel">
+      <h3>Admin — comps</h3>
+      <div class="sub">One-off carpools for something like a competition — separate from the weekly Mon–Sun practices. Create one whenever you know about it, even weeks ahead; it shows up as a banner on the main page for everyone once created. Comps don't auto-lock — open one to lock it and send its roster emails. A comp stays in this list on its own — even after its date, since some comps run multiple days — until you archive it yourself. Hide a comp to pull it from the banner without deleting it.</div>
+      ${adminActiveEvents().length === 0 ? `<div class="role-hint">No comps yet.</div>` :
+        adminActiveEvents().map(ev=>`
+        <div class="comp-row">
+          <div class="comp-row-name">${ev.eventDate < todayStr() ? '🏁' : '🏆'} ${escapeHtml(ev.name)}</div>
+          <div class="comp-row-meta">${escapeHtml(formatEventDateLabel(ev.eventDate))}${ev.pickupTime ? ' · ' + escapeHtml(formatTime12h(ev.pickupTime)) : ''}${ev.locked ? ' · locked' : ''}${ev.hidden ? ' · hidden' : ''}${ev.eventDate < todayStr() ? ' · past' : ''}</div>
+          <div class="comp-row-actions">
+            <span class="cancel primary" data-event-open="${escapeAttr(ev.id)}">Open</span>
+            <span class="cancel" data-event-edit="${escapeAttr(ev.id)}">Edit</span>
+            <span class="cancel" data-event-toggle-hidden="${escapeAttr(ev.id)}" data-hidden-state="${ev.hidden ? '1' : '0'}">${ev.hidden ? 'Show' : 'Hide'}</span>
+            <span class="cancel" data-event-archive="${escapeAttr(ev.id)}">Archive</span>
+            <span class="remove-x" data-event-delete="${escapeAttr(ev.id)}" title="Delete">×</span>
+          </div>
+        </div>`).join('')}
+      <div class="admin-add" style="margin-top:14px;flex-wrap:wrap;">
+        <input type="text" id="newEventName" placeholder="Comp name — e.g. State Comp" style="flex:1 1 100%;" value="${eventFormEditingId && eventBeingEdited() ? escapeAttr(eventBeingEdited().name) : ''}" />
+        ${(() => {
+          const evEdit = eventFormEditingId && eventBeingEdited() ? eventBeingEdited() : null;
+          const dVal = evEdit ? (evEdit.eventDate || '') : '';
+          const tVal = evEdit ? (evEdit.pickupTime || '') : '';
+          const sync = "this.parentNode.classList.toggle('has-value', !!this.value)";
+          return `<div class="comp-field${dVal ? ' has-value' : ''}"><span class="comp-ph">Date</span><input type="date" id="newEventDate" value="${escapeAttr(dVal)}" oninput="${sync}" onchange="${sync}" /></div>
+        <div class="comp-field${tVal ? ' has-value' : ''}"><span class="comp-ph">Time</span><input type="time" id="newEventTime" value="${escapeAttr(tVal)}" oninput="${sync}" onchange="${sync}" /></div>`;
+        })()}
+      </div>
+      <div class="admin-add">
+        <button class="btn" id="saveEventBtn">${eventFormEditingId ? 'Save changes' : 'Create comp'}</button>
+        ${eventFormEditingId ? `<button class="btn secondary" id="cancelEventEditBtn">Cancel</button>` : ''}
+      </div>
+    </div>
+    <div class="admin-panel">
+      <h3>Admin — hybrid pickup priority</h3>
+      <div class="sub">
+        When the week locks, any driver with a leftover empty seat can be turned into a hybrid pickup — they leave their own campus 10 minutes early, then swing by the other campus (at the usual time) to grab someone off that campus's waitlist. Any driver with an empty seat is eligible; this list only decides who gets picked first when more than one driver qualifies on the same day. Top of the list = picked first.
+      </div>
+      ${!hybridDriversLoaded ? `<div class="role-hint">Loading…</div>` : `
+        <details id="hybridListDetails" ${hybridListOpen ? 'open' : ''}>
+          <summary class="dropdown-row">
+            <span>${hybridDrivers.length} ${hybridDrivers.length===1 ? 'driver' : 'drivers'} ranked</span>
+            <span class="dd-chevron">▾</span>
+          </summary>
+          ${hybridDrivers.length === 0 ? `<div class="role-hint">Nobody ranked yet — any driver with an empty seat is still eligible, they'll just be picked in sign-up order.</div>` :
+            hybridDrivers.map((a,idx)=>`
+              <div class="admin-row">
+                <span><span style="color:var(--text-dim);font-family:'JetBrains Mono',monospace;font-size:11px;">#${idx+1}</span> ${escapeHtml(a)}</span>
+                <span style="display:flex;align-items:center;gap:10px;">
+                  ${idx>0 ? `<span class="remove-x" data-hybrid-up="${escapeAttr(a)}" title="Move up">▲</span>` : ''}
+                  ${idx<hybridDrivers.length-1 ? `<span class="remove-x" data-hybrid-down="${escapeAttr(a)}" title="Move down">▼</span>` : ''}
+                  <span class="remove-x" data-hybrid-remove="${escapeAttr(a)}">×</span>
+                </span>
+              </div>`).join('') +
+            `<div class="admin-add">
+              <button class="btn secondary" id="clearHybridBtn" style="border-color:var(--red);color:var(--red);">Clear all from list</button>
+            </div>`}
+        </details>`}
+      <div class="admin-add">
+        <input type="text" id="newHybridEmail" placeholder="teammate@umich.edu (or paste several, comma-separated)" style="flex:2;min-width:220px;" />
+        <button class="btn secondary" id="addHybridBtn">Add</button>
+      </div>
+      <div class="sub" style="margin-top:14px;">Test the matching logic right now, without waiting for lock (uses this week's current sign-ups as-is):</div>
+      <div class="admin-add">
+        <button class="btn secondary" id="runHybridNowBtn">Run hybrid matching now</button>
+      </div>
+    </div>
+    <div class="admin-panel">
+      <h3>Admin — test data</h3>
+      <div class="sub">Populate a realistic mix of fake drivers/riders (including a waitlisted person per spot) for the currently selected day (${activeDay}), using your own phone number as the contact. Useful for testing without needing real people to sign up.</div>
+      <div class="admin-add">
+        <button class="btn secondary" id="fakePopulateBtn">Populate test data for ${activeDay}</button>
+        <button class="btn secondary" id="clearTestDataBtn" style="border-color:var(--red);color:var(--red);">Clear test data</button>
+      </div>
+    </div>
+    <div class="admin-panel">
+      <h3>Admin — manage access</h3>
+      <div class="sub">Admins can remove anyone's sign-up. Add teammates by their umich.edu email.</div>
+      <details id="adminListDetails" ${adminListOpen ? 'open' : ''}>
+        <summary class="dropdown-row">
+          <span>${admins.length} ${admins.length===1 ? 'admin' : 'admins'}</span>
+          <span class="dd-chevron">▾</span>
+        </summary>
+        ${admins.map(a=>`
+          <div class="admin-row">
+            <span>${escapeHtml(personLabel(a))}${a.email===me.email ? ' (you)':''}</span>
+            ${a.email!==me.email ? `<span class="remove-x" data-admin-remove="${escapeAttr(a.email)}">×</span>` : ''}
+          </div>`).join('')}
+      </details>
+      <div class="admin-add">
+        <input type="email" id="newAdminEmail" placeholder="teammate@umich.edu" />
+        <button class="btn secondary" id="addAdminBtn">Add admin</button>
+      </div>
+    </div>
+    <div class="admin-panel">
+      <h3>Admin — restricted roster</h3>
+      <div class="sub">
+        ${me.restrictedMode
+          ? '🔒 Restricted — only admins and the people listed below can sign up, change, or cancel.'
+          : '🔓 Off — anyone on the team can sign up normally.'}
+        Use this once the roster is finalized to stop everyone else from making changes, while still letting a specific list of people (e.g. late additions) sign up.
+      </div>
+      <div class="admin-add" style="margin-bottom:14px;">
+        ${me.restrictedMode
+          ? `<button class="btn secondary" id="restrictedOffBtn">Turn off restricted mode</button>`
+          : `<button class="btn secondary" id="restrictedOnBtn">Turn on restricted mode</button>`}
+      </div>
+      <div class="sub" style="margin-top:4px;">People allowed to make changes while restricted mode is on (admins can always make changes):</div>
+      ${!restrictedListLoaded ? `<div class="role-hint">Loading…</div>` : `
+        <details id="restrictedListDetails" ${restrictedListOpen ? 'open' : ''}>
+          <summary class="dropdown-row">
+            <span>${restrictedList.length} ${restrictedList.length===1 ? 'person' : 'people'} on the list</span>
+            <span class="dd-chevron">▾</span>
+          </summary>
+          ${restrictedList.length === 0 ? `<div class="role-hint">Nobody added yet.</div>` :
+            restrictedList.map(a=>`
+              <div class="admin-row">
+                <span>${escapeHtml(personLabel(a))}</span>
+                <span class="remove-x" data-restricted-remove="${escapeAttr(a.email)}">×</span>
+              </div>`).join('') +
+            `<div class="admin-add">
+              <button class="btn secondary" id="clearRestrictedBtn" style="border-color:var(--red);color:var(--red);">Clear all from list</button>
+            </div>`}
+        </details>`}
+      <div class="admin-add">
+        <input type="text" id="newRestrictedEmail" placeholder="teammate@umich.edu (or paste several, comma-separated)" style="flex:2;min-width:220px;" />
+        <button class="btn secondary" id="addRestrictedBtn">Add</button>
+      </div>
+    </div>
+    <div class="admin-panel">
+      <h3>Admin — past weeks</h3>
+      <div class="sub">Look back at a previous week's roster (read-only).</div>
+      ${!pastWeeksLoaded ? `<div class="role-hint">Loading…</div>` :
+        pastWeeks.length === 0 ? `<div class="role-hint">No past weeks recorded yet.</div>` : `
+        <div class="admin-add">
+          <select id="pastWeekSelect">
+            ${pastWeeks.map(wk=>`<option value="${wk}">${formatWeekKeyLabel(wk)}</option>`).join('')}
+          </select>
+          <button class="btn secondary" id="viewPastWeekBtn">View</button>
+        </div>
+        <div id="pastWeekResult"></div>`}
+    </div>
+    <div class="admin-panel">
+      <h3>Admin — archived comps</h3>
+      <div class="sub">Comps you've archived — tucked away from the banner and the comps list above, but not deleted. Unarchive to bring one back.</div>
+      ${(()=>{ const archived = events.filter(ev=>ev.archived).sort((a,b)=> a.eventDate < b.eventDate ? 1 : (a.eventDate > b.eventDate ? -1 : 0)); return archived.length === 0 ? `<div class="role-hint">No archived comps.</div>` : archived.map(ev=>`
+        <div class="admin-row">
+          <span>🗄️ ${escapeHtml(ev.name)} <span style="color:var(--text-dim);font-family:'JetBrains Mono',monospace;font-size:11px;">— ${escapeHtml(formatEventDateLabel(ev.eventDate))}${ev.pickupTime ? ' · ' + escapeHtml(formatTime12h(ev.pickupTime)) : ''}</span></span>
+          <span style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+            <span class="cancel" data-event-open="${escapeAttr(ev.id)}">Open</span>
+            <span class="cancel" data-event-unarchive="${escapeAttr(ev.id)}">Unarchive</span>
+            <span class="remove-x" data-event-delete="${escapeAttr(ev.id)}">×</span>
+          </span>
+        </div>`).join(''); })()}
+    </div>`;
+  // While an event is open, only the admin panels that apply globally (or to
+  // events specifically) stay visible — the weekly-only ones would otherwise
+  // look like they apply to the event, which they don't.
+  if(viewingEvent){
+    const weeklyOnlyTitles = ["Admin — this week's practice days", "Admin — lock & emails", "Admin — restricted roster",
+      "Admin — hybrid pickup priority", "Admin — add someone to the manifest", "Admin — test data", "Admin — bulk actions", "Admin — past weeks"];
+    wrap.querySelectorAll('.admin-panel').forEach(panel=>{
+      const h3 = panel.querySelector('h3');
+      if(h3 && weeklyOnlyTitles.includes(h3.textContent.trim())) panel.style.display = 'none';
+    });
+  }
+  const adminListDetails = document.getElementById('adminListDetails');
+  if(adminListDetails){
+    adminListDetails.addEventListener('toggle', function(){
+      adminListOpen = this.open;
+    });
+  }
+  wrap.querySelectorAll('[data-admin-remove]').forEach(el=>{
+    el.addEventListener('click', ()=> withBusy(el, '…', async ()=>{
+      await callServer('removeAdminEmail', [el.dataset.adminRemove]);
+      loadAdmins();
+    }));
+  });
+  const mailSaveBtn = document.getElementById('mailSaveBtn');
+  if(mailSaveBtn) mailSaveBtn.addEventListener('click', function(){
+    const btn = this;
+    withBusy(btn, 'Saving…', async ()=>{
+      me.mail = await callServer('adminSetMailSettings', [document.getElementById('mailSenderName').value, document.getElementById('mailReplyTo').value]);
+      renderAdminPanel();
+    });
+  });
+  document.getElementById('addAdminBtn').addEventListener('click', function(){
+    const btn = this;
+    const input = document.getElementById('newAdminEmail');
+    const email = input.value.trim().toLowerCase();
+    if(!email.endsWith('@umich.edu')){ alert('Enter a @umich.edu email.'); return; }
+    withBusy(btn, 'Adding…', async ()=>{
+      await callServer('addAdmin', [email]);
+      input.value = '';
+      adminListOpen = true;
+      loadAdmins();
+    });
+  });
+  wrap.querySelectorAll('[data-day-cell]').forEach(cell=>{
+    if(cell.dataset.active === 'false'){
+      cell.addEventListener('click', ()=>{
+        const day = cell.dataset.dayCell;
+        withBusy(cell, '…', async ()=>{
+          let result;
+          if(BASE_DAYS.includes(day)){
+            result = await callServer('setDayHidden', [day, false]);
+            me.hiddenDays = result.hiddenDays;
+          } else {
+            result = await callServer('addExtraDay', [day]);
+            me.extraDays = result.extraDays;
+          }
+          renderAdminPanel();
+          render();
+        });
+      });
+    }
+  });
+  wrap.querySelectorAll('[data-day-remove]').forEach(x=>{
+    x.addEventListener('click', (e)=>{
+      e.stopPropagation();
+      const day = x.dataset.dayRemove;
+      const type = x.dataset.dayType;
+      if(!confirm(`Remove ${day} for this week?`)) return;
+      withBusy(x, '…', async ()=>{
+        let result;
+        if(type === 'base'){
+          result = await callServer('setDayHidden', [day, true]);
+          me.hiddenDays = result.hiddenDays;
+        } else {
+          result = await callServer('removeExtraDay', [day]);
+          me.extraDays = result.extraDays;
+        }
+        renderAdminPanel();
+        render();
+      });
+    });
+  });
+  wrap.querySelectorAll('[data-save-time]').forEach(btn=>{
+    btn.addEventListener('click', function(){
+      const day = this.dataset.saveTime;
+      const input = document.getElementById('time-' + day);
+      const val = input ? input.value : '';
+      withBusy(this, '…', async ()=>{
+        const result = await callServer('setPickupTime', [day, val]);
+        me.pickupTimes = result.pickupTimes;
+        renderAdminPanel();
+        render();
+      });
+    });
+  });
+  wrap.querySelectorAll('[data-lock-day]').forEach(btn=>{
+    btn.addEventListener('click', function(){
+      const day = this.dataset.lockDay;
+      if(!confirm(`Lock sign-ups for ${day}? Nobody (including admins acting as regular users) will be able to add or cancel their own sign-up for ${day} until you unlock it.`)) return;
+      withBusy(this, '…', async ()=>{
+        const result = await callServer('adminSetDayLocked', [day, true]);
+        me.dayLocks = me.dayLocks || {};
+        me.dayLocks[day] = Object.assign({}, me.dayLocks[day], {locked: result.locked});
+        renderAdminPanel();
+        render();
+      });
+    });
+  });
+  wrap.querySelectorAll('[data-unlock-day]').forEach(btn=>{
+    btn.addEventListener('click', function(){
+      const day = this.dataset.unlockDay;
+      withBusy(this, '…', async ()=>{
+        const result = await callServer('adminSetDayLocked', [day, false]);
+        me.dayLocks = me.dayLocks || {};
+        me.dayLocks[day] = Object.assign({}, me.dayLocks[day], {locked: result.locked});
+        renderAdminPanel();
+        render();
+      });
+    });
+  });
+  wrap.querySelectorAll('[data-save-lock-schedule]').forEach(btn=>{
+    btn.addEventListener('click', function(){
+      const day = this.dataset.saveLockSchedule;
+      const lockDay = wrap.querySelector(`[data-lock-schedule-day-select="${day}"]`).value;
+      const lockTime = wrap.querySelector(`[data-lock-schedule-time-input="${day}"]`).value;
+      if(!lockTime){ alert('Pick a time.'); return; }
+      withBusy(this, '…', async ()=>{
+        const result = await callServer('adminSetDayLockSchedule', [day, lockDay, lockTime]);
+        me.lockSchedules = result.schedules;
+        renderAdminPanel();
+      });
+    });
+  });
+  function selectedEmailDays(){
+    return Array.from(wrap.querySelectorAll('.email-day-check:checked')).map(x=>x.value);
+  }
+  document.getElementById('sendEmailsNowBtn').addEventListener('click', function(){
+    const days = selectedEmailDays();
+    if(!days.length){ alert('Pick at least one day to include.'); return; }
+    const allChecked = days.length === wrap.querySelectorAll('.email-day-check').length;
+    const scopeNote = allChecked ? '' : ` (only ${days.join(', ')})`;
+    if(!confirm(`Send the manifest email now${scopeNote} to everyone signed up${allChecked ? ' this week' : ' on those days'}, plus all admins? (A separate waitlist alert also goes to admins if anyone's waitlisted.) This doesn't lock the week.`)) return;
+    withBusy(this, '…', async ()=>{
+      await callServer('adminSendWeekEmailsNow', [days]);
+      alert('Emails sent.');
+    });
+  });
+  document.getElementById('sendTestEmailBtn').addEventListener('click', function(){
+    const days = selectedEmailDays();
+    if(!days.length){ alert('Pick at least one day to include.'); return; }
+    withBusy(this, '…', async ()=>{
+      await callServer('adminSendTestEmail', [days]);
+      alert('Test email sent to ' + me.email + '.');
+    });
+  });
+  wrap.querySelectorAll('[data-event-open]').forEach(el=>{
+    el.addEventListener('click', ()=> openEvent(el.dataset.eventOpen));
+  });
+  wrap.querySelectorAll('[data-event-edit]').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      eventFormEditingId = el.dataset.eventEdit;
+      renderAdminPanel();
+      const nameInput = document.getElementById('newEventName');
+      if(nameInput) nameInput.scrollIntoView({behavior:'smooth', block:'center'});
+    });
+  });
+  wrap.querySelectorAll('[data-event-delete]').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      const ev = events.find(e=>e.id===el.dataset.eventDelete);
+      if(!confirm(`Delete "${ev ? ev.name : 'this comp'}"? This also permanently removes everyone's sign-ups for it. This can't be undone.`)) return;
+      withBusy(el, '…', async ()=>{
+        await callServer('adminDeleteEvent', [el.dataset.eventDelete]);
+        if(eventFormEditingId === el.dataset.eventDelete) eventFormEditingId = null;
+        await reloadEvents();
+      });
+    });
+  });
+  wrap.querySelectorAll('[data-event-toggle-hidden]').forEach(el=>{
+    el.addEventListener('click', ()=> withBusy(el, '…', async ()=>{
+      const nowHidden = el.dataset.hiddenState !== '1';
+      await callServer('adminSetEventHidden', [el.dataset.eventToggleHidden, nowHidden]);
+      await reloadEvents();
+    }));
+  });
+  wrap.querySelectorAll('[data-event-archive]').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      const ev = events.find(e=>e.id===el.dataset.eventArchive);
+      if(!confirm(`Archive "${ev ? ev.name : 'this comp'}"? It'll be tucked away out of the comps lists and the banner — you can unarchive it any time from "Admin — archived comps".`)) return;
+      withBusy(el, '…', async ()=>{
+        await callServer('adminSetEventArchived', [el.dataset.eventArchive, true]);
+        if(eventFormEditingId === el.dataset.eventArchive) eventFormEditingId = null;
+        await reloadEvents();
+      });
+    });
+  });
+  wrap.querySelectorAll('[data-event-unarchive]').forEach(el=>{
+    el.addEventListener('click', ()=> withBusy(el, '…', async ()=>{
+      await callServer('adminSetEventArchived', [el.dataset.eventUnarchive, false]);
+      await reloadEvents();
+    }));
+  });
+  const cancelEventEditBtn = document.getElementById('cancelEventEditBtn');
+  if(cancelEventEditBtn){
+    cancelEventEditBtn.addEventListener('click', function(){
+      eventFormEditingId = null;
+      renderAdminPanel();
+    });
+  }
+  const saveEventBtn = document.getElementById('saveEventBtn');
+  if(saveEventBtn){
+    saveEventBtn.addEventListener('click', function(){
+      const name = document.getElementById('newEventName').value.trim();
+      const date = document.getElementById('newEventDate').value;
+      const time = document.getElementById('newEventTime').value;
+      if(!name){ alert('Give the comp a name.'); return; }
+      if(!date){ alert('Pick a date.'); return; }
+      withBusy(this, '…', async ()=>{
+        if(eventFormEditingId){
+          await callServer('adminUpdateEvent', [eventFormEditingId, name, date, time]);
+        } else {
+          await callServer('adminCreateEvent', [name, date, time]);
+        }
+        eventFormEditingId = null;
+        await reloadEvents();
+      });
+    });
+  }
+  const restrictedOnBtn = document.getElementById('restrictedOnBtn');
+  if(restrictedOnBtn){
+    restrictedOnBtn.addEventListener('click', function(){
+      if(!confirm("Turn on restricted mode? Only admins and people on the allow-list below will be able to sign up, change, or cancel — everyone else can still see the roster but can't change it.")) return;
+      withBusy(this, '…', async ()=>{
+        const result = await callServer('adminSetRestrictedMode', [true]);
+        me.restrictedMode = result.restrictedMode;
+        renderAdminPanel();
+        render();
+      });
+    });
+  }
+  const restrictedOffBtn = document.getElementById('restrictedOffBtn');
+  if(restrictedOffBtn){
+    restrictedOffBtn.addEventListener('click', function(){
+      withBusy(this, '…', async ()=>{
+        const result = await callServer('adminSetRestrictedMode', [false]);
+        me.restrictedMode = result.restrictedMode;
+        renderAdminPanel();
+        render();
+      });
+    });
+  }
+  const restrictedListDetails = document.getElementById('restrictedListDetails');
+  if(restrictedListDetails){
+    restrictedListDetails.addEventListener('toggle', function(){
+      restrictedListOpen = this.open;
+    });
+  }
+  wrap.querySelectorAll('[data-restricted-remove]').forEach(el=>{
+    el.addEventListener('click', ()=> withBusy(el, '…', async ()=>{
+      await callServer('removeRestrictedEmail', [el.dataset.restrictedRemove]);
+      loadRestrictedList();
+    }));
+  });
+  const clearRestrictedBtn = document.getElementById('clearRestrictedBtn');
+  if(clearRestrictedBtn){
+    clearRestrictedBtn.addEventListener('click', function(){
+      if(!confirm(`Remove all ${restrictedList.length} people from the restricted allow-list? This doesn't turn restricted mode off.`)) return;
+      withBusy(this, '…', async ()=>{
+        await callServer('clearRestrictedEmails');
+        loadRestrictedList();
+      });
+    });
+  }
+  document.getElementById('addRestrictedBtn').addEventListener('click', function(){
+    const btn = this;
+    const input = document.getElementById('newRestrictedEmail');
+    const emails = input.value.split(',').map(s=>s.trim().toLowerCase()).filter(Boolean);
+    if(!emails.length){ alert('Enter at least one @umich.edu email.'); return; }
+    withBusy(btn, 'Adding…', async ()=>{
+      const result = await callServer('addRestrictedEmails', [emails]);
+      input.value = '';
+      restrictedListOpen = true;
+      if(result && result.skipped && result.skipped.length){
+        alert(`Skipped (not a @umich.edu email): ${result.skipped.join(', ')}`);
+      }
+      loadRestrictedList();
+    });
+  });
+  const hybridListDetails = document.getElementById('hybridListDetails');
+  if(hybridListDetails){
+    hybridListDetails.addEventListener('toggle', function(){
+      hybridListOpen = this.open;
+    });
+  }
+  wrap.querySelectorAll('[data-hybrid-remove]').forEach(el=>{
+    el.addEventListener('click', ()=> withBusy(el, '…', async ()=>{
+      await callServer('removeHybridDriver', [el.dataset.hybridRemove]);
+      loadHybridDrivers();
+    }));
+  });
+  wrap.querySelectorAll('[data-hybrid-up]').forEach(el=>{
+    el.addEventListener('click', ()=> withBusy(el, '…', async ()=>{
+      await callServer('moveHybridDriverUp', [el.dataset.hybridUp]);
+      hybridListOpen = true;
+      loadHybridDrivers();
+    }));
+  });
+  wrap.querySelectorAll('[data-hybrid-down]').forEach(el=>{
+    el.addEventListener('click', ()=> withBusy(el, '…', async ()=>{
+      await callServer('moveHybridDriverDown', [el.dataset.hybridDown]);
+      hybridListOpen = true;
+      loadHybridDrivers();
+    }));
+  });
+  const clearHybridBtn = document.getElementById('clearHybridBtn');
+  if(clearHybridBtn){
+    clearHybridBtn.addEventListener('click', function(){
+      if(!confirm(`Remove all ${hybridDrivers.length} drivers from the hybrid priority list? Drivers stay eligible for hybrid pickup — this just clears the ranking.`)) return;
+      withBusy(this, '…', async ()=>{
+        await callServer('clearHybridDrivers');
+        loadHybridDrivers();
+      });
+    });
+  }
+  const addHybridBtn = document.getElementById('addHybridBtn');
+  if(addHybridBtn){
+    addHybridBtn.addEventListener('click', function(){
+      const btn = this;
+      const input = document.getElementById('newHybridEmail');
+      const emails = input.value.split(',').map(s=>s.trim().toLowerCase()).filter(Boolean);
+      if(!emails.length){ alert('Enter at least one @umich.edu email.'); return; }
+      withBusy(btn, 'Adding…', async ()=>{
+        const result = await callServer('addHybridDrivers', [emails]);
+        input.value = '';
+        hybridListOpen = true;
+        if(result && result.skipped && result.skipped.length){
+          alert(`Skipped (not a @umich.edu email): ${result.skipped.join(', ')}`);
+        }
+        loadHybridDrivers();
+      });
+    });
+  }
+  const runHybridNowBtn = document.getElementById('runHybridNowBtn');
+  if(runHybridNowBtn){
+    runHybridNowBtn.addEventListener('click', function(){
+      if(!confirm("Run hybrid matching right now using this week's current sign-ups? This can actually move real waitlisted people into real drivers' cars if the conditions are met — it's not just a preview. Normally this runs automatically when the week locks.")) return;
+      withBusy(this, '…', async ()=>{
+        await callServer('adminRunHybridMatchingNow');
+        await refresh();
+        alert('Hybrid matching ran. Check the roster for any new hybrid pickups.');
+      });
+    });
+  }
+  const addRosterRoleSelect = document.getElementById('addRosterRole');
+  const addRosterDaySelect = document.getElementById('addRosterDay');
+  const addRosterLocationSelect = document.getElementById('addRosterLocation');
+  function syncRosterDriverOptions(){
+    const sel = document.getElementById('addRosterDriverChoice');
+    if(!sel || !addRosterDaySelect || !addRosterLocationSelect) return;
+    const day = addRosterDaySelect.value;
+    const location = addRosterLocationSelect.value;
+    // Only ever list drivers signed up at the SAME campus for that day —
+    // riders (including via this admin tool) never pick a driver on the
+    // other campus. Cross-campus pairing only happens automatically through
+    // hybrid matching at lock time.
+    const driversHere = rows.filter(r=>r.day===day && r.location===location && r.role==='driver');
+    const prevVal = sel.value;
+    sel.innerHTML = '<option value="">No preference (auto-assign)</option>' +
+      driversHere.map(d=>`<option value="${escapeAttr(d.email)}">${escapeHtml(d.name)} — ${d.seats} seat${Number(d.seats)===1?'':'s'}</option>`).join('');
+    if(driversHere.some(d=>d.email===prevVal)) sel.value = prevVal;
+  }
+  if(addRosterRoleSelect){
+    const syncRosterRoleRows = ()=>{
+      const isDriver = addRosterRoleSelect.value === 'driver';
+      document.getElementById('addRosterDriverRow').style.display = isDriver ? 'flex' : 'none';
+      document.getElementById('addRosterRiderRow').style.display = isDriver ? 'none' : 'flex';
+      if(!isDriver) syncRosterDriverOptions();
+    };
+    addRosterRoleSelect.addEventListener('change', syncRosterRoleRows);
+    syncRosterRoleRows();
+  }
+  if(addRosterDaySelect) addRosterDaySelect.addEventListener('change', syncRosterDriverOptions);
+  if(addRosterLocationSelect) addRosterLocationSelect.addEventListener('change', syncRosterDriverOptions);
+  syncRosterDriverOptions();
+  function fillRosterFieldsFromProfile(profile, opts){
+    if(!profile) return;
+    const emailEl = document.getElementById('addRosterEmail');
+    const nameEl = document.getElementById('addRosterName');
+    const phoneEl = document.getElementById('addRosterPhone');
+    const carEl = document.getElementById('addRosterCar');
+    if(opts && opts.email !== undefined && emailEl) emailEl.value = opts.email;
+    if(profile.name && nameEl) nameEl.value = profile.name;
+    if(profile.phone && phoneEl) phoneEl.value = profile.phone;
+    if(profile.car && carEl) carEl.value = profile.car;
+  }
+  function extractEmailToken(raw){
+    if(!raw) return '';
+    const m = raw.trim().match(/^[^\s(]+/);
+    return (m ? m[0] : raw.trim()).toLowerCase();
+  }
+  const addRosterEmailInput = document.getElementById('addRosterEmail');
+  if(addRosterEmailInput){
+    addRosterEmailInput.addEventListener('blur', function(){
+      const email = extractEmailToken(addRosterEmailInput.value);
+      if(!email) return;
+      addRosterEmailInput.value = email;
+      callServer('getProfileRow', [email]).then(function(profile){ fillRosterFieldsFromProfile(profile); }).catch(function(){});
+    });
+  }
+  const addRosterNameInput = document.getElementById('addRosterName');
+  if(addRosterNameInput){
+    addRosterNameInput.addEventListener('blur', function(){
+      const typed = addRosterNameInput.value.trim().toLowerCase();
+      if(!typed) return;
+      const match = (allProfiles||[]).find(p=>(p.name||'').trim().toLowerCase() === typed);
+      if(match) fillRosterFieldsFromProfile(match, {email: match.email});
+    });
+  }
+  const addRosterBtn = document.getElementById('addRosterBtn');
+  if(addRosterBtn){
+    addRosterBtn.addEventListener('click', function(){
+      const targetEmail = extractEmailToken(document.getElementById('addRosterEmail').value);
+      const name = document.getElementById('addRosterName').value.trim();
+      const phone = document.getElementById('addRosterPhone').value.trim();
+      const car = document.getElementById('addRosterCar').value.trim();
+      const day = document.getElementById('addRosterDay').value;
+      const location = document.getElementById('addRosterLocation').value;
+      const role = document.getElementById('addRosterRole').value;
+      const seats = document.getElementById('addRosterSeats').value;
+      const driverChoice = document.getElementById('addRosterDriverChoice').value.trim().toLowerCase();
+      const notes = document.getElementById('addRosterNotes').value.trim();
+      if(!targetEmail.endsWith('@umich.edu')){ alert('Enter a @umich.edu email.'); return; }
+      if(!nameIsValid(name)){ alert('Enter their full name (first and last).'); return; }
+      if(!phoneIsValid(phone)){ alert('Enter a valid 10-digit phone number.'); return; }
+      if(role === 'driver' && !seats){ alert('Pick a number of seats.'); return; }
+      withBusy(this, 'Adding…', async ()=>{
+        await callServer('adminAddSignup', [targetEmail, name, phone, car, day, location, role, seats || null, driverChoice, notes]);
+        document.getElementById('addRosterEmail').value = '';
+        document.getElementById('addRosterName').value = '';
+        document.getElementById('addRosterPhone').value = '';
+        document.getElementById('addRosterCar').value = '';
+        document.getElementById('addRosterDriverChoice').value = '';
+        document.getElementById('addRosterNotes').value = '';
+        await refresh();
+        alert('Added to the roster.');
+      });
+    });
+  }
+  const lockEventBtn = document.getElementById('lockEventBtn');
+  if(lockEventBtn){
+    lockEventBtn.addEventListener('click', function(){
+      withBusy(this, '…', async ()=>{
+        await callServer('adminSetEventLocked', [viewingEvent, true]);
+        await refreshEvent();
+        renderAdminPanel();
+      });
+    });
+  }
+  const unlockEventBtn = document.getElementById('unlockEventBtn');
+  if(unlockEventBtn){
+    unlockEventBtn.addEventListener('click', function(){
+      withBusy(this, '…', async ()=>{
+        await callServer('adminSetEventLocked', [viewingEvent, false]);
+        await refreshEvent();
+        renderAdminPanel();
+      });
+    });
+  }
+  const sendEventEmailsNowBtn = document.getElementById('sendEventEmailsNowBtn');
+  if(sendEventEmailsNowBtn){
+    sendEventEmailsNowBtn.addEventListener('click', function(){
+      if(!confirm('Send the manifest email for this comp to everyone signed up right now?')) return;
+      withBusy(this, 'Sending…', async ()=>{
+        await callServer('adminSendEventEmailNow', [viewingEvent]);
+        alert('Manifest emails sent.');
+      });
+    });
+  }
+  const sendEventTestEmailBtn = document.getElementById('sendEventTestEmailBtn');
+  if(sendEventTestEmailBtn){
+    sendEventTestEmailBtn.addEventListener('click', function(){
+      withBusy(this, 'Sending…', async ()=>{
+        await callServer('adminSendEventTestEmail', [viewingEvent]);
+        alert('Test email sent to you.');
+      });
+    });
+  }
+  const clearEventBtn = document.getElementById('clearEventBtn');
+  if(clearEventBtn){
+    clearEventBtn.addEventListener('click', function(){
+      if(!confirm('Clear ALL sign-ups for this comp? This removes every driver and rider entry. This cannot be undone.')) return;
+      withBusy(this, '…', async ()=>{
+        await callServer('adminClearEvent', [viewingEvent]);
+        await refreshEvent();
+      });
+    });
+  }
+  const addEventRosterRoleSelect = document.getElementById('addEventRosterRole');
+  const addEventRosterLocationSelect = document.getElementById('addEventRosterLocation');
+  function syncEventRosterDriverOptions(){
+    const sel = document.getElementById('addEventRosterDriverChoice');
+    if(!sel || !addEventRosterLocationSelect) return;
+    const location = addEventRosterLocationSelect.value;
+    const driversHere = eventRows.filter(r=>r.location===location && r.role==='driver');
+    const prevVal = sel.value;
+    sel.innerHTML = '<option value="">No preference (auto-assign)</option>' +
+      driversHere.map(d=>`<option value="${escapeAttr(d.email)}">${escapeHtml(d.name)} — ${d.seats} seat${Number(d.seats)===1?'':'s'}</option>`).join('');
+    if(driversHere.some(d=>d.email===prevVal)) sel.value = prevVal;
+  }
+  if(addEventRosterRoleSelect){
+    const syncEventRosterRoleRows = ()=>{
+      const isDriver = addEventRosterRoleSelect.value === 'driver';
+      document.getElementById('addEventRosterDriverRow').style.display = isDriver ? 'flex' : 'none';
+      document.getElementById('addEventRosterRiderRow').style.display = isDriver ? 'none' : 'flex';
+      if(!isDriver) syncEventRosterDriverOptions();
+    };
+    addEventRosterRoleSelect.addEventListener('change', syncEventRosterRoleRows);
+    syncEventRosterRoleRows();
+  }
+  if(addEventRosterLocationSelect) addEventRosterLocationSelect.addEventListener('change', syncEventRosterDriverOptions);
+  syncEventRosterDriverOptions();
+  const addEventRosterEmailInput = document.getElementById('addEventRosterEmail');
+  if(addEventRosterEmailInput){
+    addEventRosterEmailInput.addEventListener('blur', function(){
+      const email = extractEmailToken(addEventRosterEmailInput.value);
+      if(!email) return;
+      addEventRosterEmailInput.value = email;
+      callServer('getProfileRow', [email]).then(function(profile){ fillEventRosterFieldsFromProfile(profile); }).catch(function(){});
+    });
+  }
+  const addEventRosterNameInput = document.getElementById('addEventRosterName');
+  if(addEventRosterNameInput){
+    addEventRosterNameInput.addEventListener('blur', function(){
+      const typed = addEventRosterNameInput.value.trim().toLowerCase();
+      if(!typed) return;
+      const match = (allProfiles||[]).find(p=>(p.name||'').trim().toLowerCase() === typed);
+      if(match) fillEventRosterFieldsFromProfile(match, {email: match.email});
+    });
+  }
+  function fillEventRosterFieldsFromProfile(profile, opts){
+    if(!profile) return;
+    const emailEl = document.getElementById('addEventRosterEmail');
+    const nameEl = document.getElementById('addEventRosterName');
+    const phoneEl = document.getElementById('addEventRosterPhone');
+    const carEl = document.getElementById('addEventRosterCar');
+    if(opts && opts.email !== undefined && emailEl) emailEl.value = opts.email;
+    if(profile.name && nameEl) nameEl.value = profile.name;
+    if(profile.phone && phoneEl) phoneEl.value = profile.phone;
+    if(profile.car && carEl) carEl.value = profile.car;
+  }
+  const addEventRosterBtn = document.getElementById('addEventRosterBtn');
+  if(addEventRosterBtn){
+    addEventRosterBtn.addEventListener('click', function(){
+      const targetEmail = extractEmailToken(document.getElementById('addEventRosterEmail').value);
+      const name = document.getElementById('addEventRosterName').value.trim();
+      const phone = document.getElementById('addEventRosterPhone').value.trim();
+      const car = document.getElementById('addEventRosterCar').value.trim();
+      const location = document.getElementById('addEventRosterLocation').value;
+      const role = document.getElementById('addEventRosterRole').value;
+      const seats = document.getElementById('addEventRosterSeats').value;
+      const driverChoice = document.getElementById('addEventRosterDriverChoice').value.trim().toLowerCase();
+      const notes = document.getElementById('addEventRosterNotes').value.trim();
+      if(!targetEmail.endsWith('@umich.edu')){ alert('Enter a @umich.edu email.'); return; }
+      if(!nameIsValid(name)){ alert('Enter their full name (first and last).'); return; }
+      if(!phoneIsValid(phone)){ alert('Enter a valid 10-digit phone number.'); return; }
+      if(role === 'driver' && !seats){ alert('Pick a number of seats.'); return; }
+      withBusy(this, 'Adding…', async ()=>{
+        await callServer('adminAddEventSignup', [viewingEvent, targetEmail, name, phone, car, location, role, seats || null, driverChoice, notes]);
+        document.getElementById('addEventRosterEmail').value = '';
+        document.getElementById('addEventRosterName').value = '';
+        document.getElementById('addEventRosterPhone').value = '';
+        document.getElementById('addEventRosterCar').value = '';
+        document.getElementById('addEventRosterDriverChoice').value = '';
+        document.getElementById('addEventRosterNotes').value = '';
+        await refreshEvent();
+        alert('Added to the manifest.');
+      });
+    });
+  }
+  document.getElementById('fakePopulateBtn').addEventListener('click', function(){
+    withBusy(this, '…', async ()=>{
+      await callServer('adminFakePopulate', [activeDay]);
+      await refresh();
+      renderAdminPanel();
+    });
+  });
+  document.getElementById('clearTestDataBtn').addEventListener('click', function(){
+    if(!confirm('Remove all test data (rows with "+test" in the email) for this week? Real sign-ups are left alone.')) return;
+    withBusy(this, '…', async ()=>{
+      await callServer('adminClearTestData');
+      await refresh();
+      renderAdminPanel();
+    });
+  });
+  document.getElementById('clearWeekBtn').addEventListener('click', function(){
+    if(!confirm('Clear ALL sign-ups for this week? This removes every driver and rider entry for every active day this week. This cannot be undone.')) return;
+    withBusy(this, '…', async ()=>{
+      await callServer('clearCurrentWeek');
+      pastWeeksLoaded = false; // this week may now show up in past weeks next time
+      await refresh();
+    });
+  });
+  const viewPastWeekBtn = document.getElementById('viewPastWeekBtn');
+  if(viewPastWeekBtn){
+    viewPastWeekBtn.addEventListener('click', function(){
+      const wk = document.getElementById('pastWeekSelect').value;
+      if(!wk) return;
+      withBusy(this, '…', async ()=>{
+        const data = await callServer('getPastWeekData', [wk]);
+        document.getElementById('pastWeekResult').innerHTML = renderPastWeekRosterHtml(data.rows);
+      });
+    });
+  }
+}
+
+function renderPastWeekRosterHtml(pastRows){
+  if(!pastRows.length) return '<div class="empty-note">No sign-ups recorded for that week.</div>';
+  const daysPresent = WEEKDAY_ORDER.filter(d=> pastRows.some(r=>r.day===d));
+  let html = '';
+  daysPresent.forEach(day=>{
+    html += `<div class="section-label" style="margin-top:16px;">${escapeHtml(day)}</div>`;
+    LOCATIONS.forEach(loc=>{
+      const drivers = pastRows.filter(r=>r.day===day && r.location===loc.key && r.role==='driver').sort(sortByTs);
+      const riders = pastRows.filter(r=>r.day===day && r.location===loc.key && r.role==='rider').sort(sortByTs);
+      if(!drivers.length && !riders.length) return;
+      const {cars, waiting} = computeAssignments(drivers, riders);
+      html += `<div style="margin:8px 0 4px;font-size:12.5px;font-weight:600;">${escapeHtml(loc.label)}</div>`;
+      if(!cars.length){
+        html += '<div class="empty-note">No drivers.</div>';
+      } else {
+        cars.forEach(car=>{
+          const riderNames = car.assigned.length ? car.assigned.map(r=>escapeHtml(r.name)).join(', ') : 'no riders';
+          html += `<div class="car-card"><div class="car-name">🚗 ${escapeHtml(car.name)}<span class="phone">${car.seats} seats</span></div><div style="margin-top:6px;font-size:13px;color:var(--text-dim);">${riderNames}</div></div>`;
+        });
+      }
+      if(waiting.length){
+        html += `<div class="waiting-row"><span>${waiting.map(r=>escapeHtml(r.name)).join(', ')}</span><span class="tag">waitlisted</span></div>`;
+      }
+    });
+  });
+  return html || '<div class="empty-note">No sign-ups recorded for that week.</div>';
+}
+
+function computeAssignments(drivers, riders){
+  const cars = drivers.map(d=>({...d, assigned:[]}));
+  const carByEmail = {};
+  cars.forEach(c=>{ carByEmail[c.email] = c; });
+  const sorted = riders.slice().sort(sortByTs);
+  const noPreference = [];
+  const stuck = [];
+  sorted.forEach(r=>{
+    const chosen = r.driverChoice && carByEmail[r.driverChoice];
+    if(chosen){
+      if(chosen.assigned.length < chosen.seats){
+        chosen.assigned.push(r);
+      } else {
+        stuck.push(r); // their specific pick is full — they wait for that car, not a random one
+      }
+    } else {
+      noPreference.push(r); // no preference, or their chosen driver cancelled
+    }
+  });
+  cars.forEach(car=>{
+    const backfillLimit = Math.max((Number(car.seats)||0) - (Number(car.reservedSeats)||0), 0);
+    while(car.assigned.length < backfillLimit && noPreference.length){
+      car.assigned.push(noPreference.shift());
+    }
+  });
+  const waiting = stuck.concat(noPreference).sort(sortByTs);
+  return {cars, waiting};
+}
+function sortByTs(a,b){ return (a.timestamp||0) - (b.timestamp||0); }
+
+function visibleDays(){
+  const base = BASE_DAYS.filter(d=> !(me.hiddenDays||[]).includes(d));
+  const extra = (me.extraDays||[]).filter(d=> !base.includes(d));
+  const combined = base.concat(extra);
+  return WEEKDAY_ORDER.filter(d=>combined.includes(d)).map(d=>({key:d, short:d.toUpperCase()}));
+}
+function renderTabs(){
+  const wrap = document.getElementById('dayTabs');
+  wrap.innerHTML = '';
+  const vis = visibleDays();
+  if(!vis.find(d=>d.key===activeDay) && vis.length){
+    activeDay = vis[0].key;
+  }
+  vis.forEach(d=>{
+    const el = document.createElement('div');
+    el.className = 'day-tab' + (d.key===activeDay ? ' active':'');
+    const locked = !!(me.dayLocks && me.dayLocks[d.key] && me.dayLocks[d.key].locked);
+    el.innerHTML = `<div class="d">${locked ? '🔒 ' : ''}${d.short}</div><div class="dt">${me.weekDates[d.key]}</div>`;
+    el.onclick = ()=>{ activeDay = d.key; render(); if(me.isAdmin) renderAdminPanel(); };
+    wrap.appendChild(el);
+  });
+}
+
+function render(){
+  if(!me) return;
+  if(viewingEvent) return; // event view owns the DOM while open — see renderEventView()
+  document.getElementById('weeklyView').style.display = 'block';
+  document.getElementById('eventView').style.display = 'none';
+  document.getElementById('adminBadge').style.display = me.isAdmin ? 'inline-block' : 'none';
+  document.getElementById('adminSection').style.display = me.isAdmin ? 'block' : 'none';
+  if(me.isAdmin && admins.length === 0){ loadAdmins(); }
+  if(me.isAdmin && !pastWeeksLoaded){ loadPastWeeks(); }
+  if(me.isAdmin && !restrictedListLoaded){ loadRestrictedList(); }
+  if(me.isAdmin && !hybridDriversLoaded){ loadHybridDrivers(); }
+  if(me.isAdmin && !allProfilesLoaded){ loadAllProfiles(); }
+  renderTabs(); // finalizes activeDay for this render pass before we check its lock state
+  const dayLocked = !!(me.dayLocks && me.dayLocks[activeDay] && me.dayLocks[activeDay].locked);
+  me.blocked = dayLocked || (!!me.restrictedMode && !me.restrictedAllowed);
+  document.getElementById('lockBanner').style.display = dayLocked ? 'block' : 'none';
+  if(dayLocked){
+    document.getElementById('lockBanner').textContent = `🔒 Sign-ups are locked for ${activeDay}. Existing sign-ups are shown below, but no new changes can be made until an admin unlocks it.`;
+  }
+  document.getElementById('restrictedBanner').style.display = (!dayLocked && me.restrictedMode && !me.restrictedAllowed) ? 'block' : 'none';
+  const noteEl = document.getElementById('lockScheduleNote');
+  const sched = me.lockSchedules && me.lockSchedules[activeDay];
+  const showNote = !dayLocked && !!sched && !(me.restrictedMode && !me.restrictedAllowed);
+  noteEl.style.display = showNote ? 'block' : 'none';
+  if(showNote){
+    const lockDateLabel = (me.weekDates && me.weekDates[sched.lockDay]) || '';
+    noteEl.textContent = sched.lockDay === activeDay
+      ? `🔓 Locks ${activeDay} at ${formatTime12h(sched.lockTime)}`
+      : `🔓 Locks ${sched.lockDay}${lockDateLabel ? ' (' + lockDateLabel + ')' : ''} at ${formatTime12h(sched.lockTime)}`;
+  }
+  document.getElementById('roleBar').style.display = me.blocked ? 'none' : 'flex';
+  const wrap = document.getElementById('locations');
+  wrap.innerHTML = '';
+
+  if(visibleDays().length === 0){
+    wrap.innerHTML = '<div class="empty-note">No practice days are active this week. Check back later or ask an admin.</div>';
+    return;
+  }
+
+  LOCATIONS.forEach(loc=>{
+    const drivers = rows.filter(r=>r.day===activeDay && r.location===loc.key && r.role==='driver').sort(sortByTs);
+    const riders = rows.filter(r=>r.day===activeDay && r.location===loc.key && r.role==='rider').sort(sortByTs);
+    const {cars, waiting} = computeAssignments(drivers, riders);
+    const totalSeats = drivers.reduce((a,d)=>a+(Number(d.seats)||0),0);
+    const filledSeats = cars.reduce((a,c)=>a+c.assigned.length,0);
+
+    const panel = document.createElement('div');
+    panel.className = 'loc-panel';
+
+    let gaugeHtml = '<div class="gauge">';
+    const segCount = Math.max(totalSeats, 1);
+    for(let i=0;i<segCount;i++){
+      gaugeHtml += `<div class="seg ${i<filledSeats?'filled':(totalSeats===0?'empty-driver':'')}"></div>`;
+    }
+    gaugeHtml += '</div>';
+
+    let carsHtml = '';
+    if(cars.length===0){
+      carsHtml = '<div class="empty-note">No drivers signed up yet for this pickup spot.</div>';
+    } else {
+      const officialTime = (me.pickupTimes || {})[activeDay];
+      cars.forEach(car=>{
+        const seats = Number(car.seats)||0;
+        const isHybrid = !!car.hybridSecondLocation;
+        const ownTimeLabel = isHybrid && officialTime ? formatTime12h(offsetTimeMinutes(officialTime, -HYBRID_OFFSET_MINUTES)) : '';
+        const otherTimeLabel = isHybrid && officialTime ? formatTime12h(officialTime) : '';
+        const otherLoc = LOCATIONS.find(l=>l.key!==car.location);
+        let pips = '';
+        for(let i=0;i<seats;i++) pips += `<div class="pip ${i<car.assigned.length?'on':''}"></div>`;
+        let ridersHtml = car.assigned.map(r=>{
+          const stopTag = (isHybrid && r.hybridStop) ? `<span class="note-tag" style="color:var(--blue);font-family:'JetBrains Mono',monospace;font-size:10px;" title="Picked up at ${escapeAttr(locationLabel(r.hybridStop))}">📍${escapeHtml(locationLabel(r.hybridStop))}</span>` : '';
+          const rOtherLoc = LOCATIONS.find(l=>l.key!==r.location);
+          return `<div class="rider-chip">${escapeHtml(r.name)}${r.phone ? `<span class="phone">${escapeHtml(r.phone)}</span>` : ''}${stopTag}${r.notes ? `<span class="note-tag" title="${escapeAttr(r.notes)}">📝</span>` : ''}${me.isAdmin ? moveSelectHtml(r, cars, car.email) : ''}${canRemove(r.email) ? `<span class="switch-campus-x" data-switch-day="${r.day}" data-switch-loc="${r.location}" data-switch-email="${r.email}" data-switch-to="${rOtherLoc.key}" title="Switch to ${rOtherLoc.label}">⇄</span>` : ''}${canRemove(r.email) ? `<span class="remove-x" data-remove-day="${r.day}" data-remove-loc="${r.location}" data-remove-role="${r.role}" data-remove-email="${r.email}">×</span>` : ''}</div>`;
+        }).join('');
+        const openSeats = seats - car.assigned.length;
+        const reservedOpen = Math.min(Number(car.reservedSeats)||0, openSeats);
+        const trulyOpen = openSeats - reservedOpen;
+        for(let i=0;i<reservedOpen;i++){
+          ridersHtml += `<div class="rider-chip open reserved">🔖 reserved${me.isAdmin ? `<span class="remove-x" data-release-day="${car.day}" data-release-loc="${car.location}" data-release-driver="${car.email}">×</span>` : ''}</div>`;
+        }
+        for(let i=0;i<trulyOpen;i++) ridersHtml += `<div class="rider-chip open">open seat</div>`;
+        const adminEditKey = 'wk|' + car.day + '|' + car.location + '|' + car.email;
+        carsHtml += `
+          <div class="car-card">
+            <div class="car-top">
+              <div class="car-name">🚗 ${escapeHtml(car.name)}${car.phone ? `<span class="phone">${escapeHtml(car.phone)}</span>` : ''}</div>
+              <div class="car-seats">${pips}</div>
+            </div>
+            <div class="car-sub">
+              ${car.car ? `<div class="car-vehicle">🚙 ${escapeHtml(car.car)}</div>` : ''}
+              <div class="car-controls">
+              ${me.isAdmin ? `<span class="driver-remove" data-admin-edit-driver="${adminEditKey}">edit</span>` : ''}
+              ${canRemove(car.email) ? `<span class="driver-remove" data-switch-day="${car.day}" data-switch-loc="${car.location}" data-switch-email="${car.email}" data-switch-to="${otherLoc.key}" title="Relocate car to ${otherLoc.label}">⇄ ${otherLoc.label.replace(' Campus','')}</span>` : ''}
+              ${canRemove(car.email) ? `<span class="driver-remove" data-remove-day="${car.day}" data-remove-loc="${car.location}" data-remove-role="${car.role}" data-remove-email="${car.email}">remove</span>` : ''}
+              </div>
+            </div>
+            ${adminEditingDriver.has(adminEditKey) ? `
+            <div class="add-row">
+              <select class="seats-input" data-admin-edit-seats-input="${adminEditKey}">
+                ${[1,2,3,4,5,6,7,8].map(n=>`<option value="${n}" ${n===seats?'selected':''}>${n} seat${n===1?'':'s'}</option>`).join('')}
+              </select>
+            </div>
+            <div class="add-row">
+              <input type="text" class="note-input" data-admin-edit-note-input="${adminEditKey}" maxlength="200" placeholder="Note (optional)" value="${escapeAttr(car.notes||'')}" />
+            </div>
+            <div class="add-row">
+              <button class="btn" data-admin-save-driver="${adminEditKey}" data-admin-save-day="${car.day}" data-admin-save-loc="${car.location}" data-admin-save-email="${car.email}">Save</button>
+              <button class="btn secondary" data-admin-cancel-driver="${adminEditKey}">Cancel</button>
+            </div>` : ''}
+            ${isHybrid ? `<div class="car-note" style="color:var(--blue);">🔀 Hybrid pickup — leaves ${escapeHtml(loc.label)} at ${escapeHtml(ownTimeLabel)}, then ${escapeHtml(locationLabel(car.hybridSecondLocation))} at ${escapeHtml(otherTimeLabel)}</div>` : ''}
+            ${car.notes ? `<div class="car-note">📝 ${escapeHtml(car.notes)}</div>` : ''}
+            <div class="car-riders">${ridersHtml || ''}</div>
+          </div>`;
+      });
+    }
+
+    let waitingHtml = '';
+    if(waiting.length){
+      waitingHtml += '<div class="section-label">Waitlist — backfills automatically as drivers sign up</div>';
+      waiting.forEach((r, idx)=>{
+        const rOtherLoc = LOCATIONS.find(l=>l.key!==r.location);
+        waitingHtml += `
+          <div class="waiting-row">
+            <span>#${idx+1} · ${escapeHtml(r.name)}</span>
+            <span style="display:flex;align-items:center;gap:10px;">
+              <span class="tag">waitlisted</span>
+              ${me.isAdmin ? moveSelectHtml(r, cars) : ''}
+              ${canRemove(r.email) ? `<span class="switch-campus-x" data-switch-day="${r.day}" data-switch-loc="${r.location}" data-switch-email="${r.email}" data-switch-to="${rOtherLoc.key}" title="Switch to ${rOtherLoc.label}">⇄</span>` : ''}
+              ${canRemove(r.email) ? `<span class="remove-x" data-remove-day="${r.day}" data-remove-loc="${r.location}" data-remove-role="${r.role}" data-remove-email="${r.email}">×</span>` : ''}
+            </span>
+          </div>`;
+      });
+    }
+
+    const myDriverEntry = drivers.find(d=>d.email===me.email);
+    const myRiderEntry = riders.find(r=>r.email===me.email);
+    const myDayEntryElsewhere = rows.find(r=>r.day===activeDay && r.email===me.email && !(r.location===loc.key && r.role===myRole));
+    let signupHtml = '';
+    if(!nameIsValid(me.name) || !phoneIsValid(me.phone)){
+      signupHtml = '';
+    } else if(!myRole){
+      signupHtml = '';
+    } else if(myDayEntryElsewhere){
+      const whereLabel = myDayEntryElsewhere.location==='north' ? 'North Campus' : 'Central Campus';
+      signupHtml = `<div class="role-hint">You're already signed up as a ${escapeHtml(myDayEntryElsewhere.role)} at ${whereLabel} for ${activeDay}. Cancel that first to switch here.</div>`;
+    } else if(myRole==='driver'){
+      const editKey = activeDay + '|' + loc.key;
+      signupHtml = myDriverEntry ? (
+        editingSeats.has(editKey) ? `
+          <div class="add-row">
+            <select class="seats-input" data-edit-seats-input="${editKey}">
+              ${[1,2,3,4,5,6,7,8].map(n=>`<option value="${n}" ${n===Number(myDriverEntry.seats)?'selected':''}>${n} seat${n===1?'':'s'}</option>`).join('')}
+            </select>
+          </div>
+          <div class="add-row">
+            <input type="text" class="note-input" data-edit-note-input="${editKey}" maxlength="200" placeholder="Note (optional) — e.g. leaving 10 min late" value="${escapeAttr(myDriverEntry.notes||'')}" />
+          </div>
+          <div class="add-row">
+            <button class="btn" data-save-seats="${loc.key}" data-edit-key="${editKey}">Update</button>
+            <button class="btn secondary" data-cancel-edit-seats="${editKey}">Cancel</button>
+          </div>` : `
+          <div class="you-status driver" style="flex-wrap:wrap;">
+            <span>You're driving — offering ${myDriverEntry.seats} seat${Number(myDriverEntry.seats)===1?'':'s'}${myDriverEntry.notes ? `<br><span style="font-style:italic;color:var(--text-dim);font-weight:400;">${escapeHtml(myDriverEntry.notes)}</span>` : ''}</span>
+            <span style="display:flex;align-items:center;gap:12px;">
+              ${me.blocked ? '' : `<span class="cancel" data-edit-seats="${editKey}">Edit</span>`}
+              ${me.blocked ? '' : `<span class="cancel" data-remove-day="${activeDay}" data-remove-loc="${loc.key}" data-remove-role="driver" data-remove-email="${me.email}">Cancel</span>`}
+            </span>
+          </div>`
+      ) : me.blocked ? '' : `
+          <div class="add-row">
+            <select class="seats-input" data-driver-seats="${loc.key}">
+              <option value="" disabled selected>Seats</option>
+              ${[1,2,3,4,5,6,7,8].map(n=>`<option value="${n}">${n} seat${n===1?'':'s'}</option>`).join('')}
+            </select>
+          </div>
+          <div class="add-row">
+            <input type="text" class="note-input" data-driver-note="${loc.key}" maxlength="200" placeholder="Note (optional) — e.g. leaving 10 min late" />
+          </div>
+          <div class="add-row">
+            <button class="btn" data-add-driver="${loc.key}" disabled style="opacity:0.5;cursor:not-allowed;">I'm driving from here</button>
+          </div>`;
+    } else if(myRole==='rider'){
+      const waitlistPos = waiting.findIndex(r=>r.email===me.email);
+      if(myRiderEntry){
+        signupHtml = `
+          <div class="you-status" style="flex-wrap:wrap;">
+            <span>${waitlistPos >= 0 ? `You're #${waitlistPos+1} on the waitlist — you'll auto-fill the next open seat` : "You're signed up for a ride"}${myRiderEntry.notes ? `<br><span style="font-style:italic;color:var(--text-dim);">${escapeHtml(myRiderEntry.notes)}</span>` : ''}</span>
+            ${me.blocked ? '' : `<span class="cancel" data-remove-day="${activeDay}" data-remove-loc="${loc.key}" data-remove-role="rider" data-remove-email="${me.email}">Cancel</span>`}
+          </div>`;
+      } else if(me.blocked){
+        signupHtml = '';
+      } else if(cars.length > 1 || cars.some(c=>(Number(c.reservedSeats)||0) > 0)){
+        signupHtml = `
+          <div class="add-row">
+            <select class="seats-input" data-driver-pick="${loc.key}">
+              <option value="">No preference (auto-assign)</option>
+              ${cars.map(c=>`<option value="${escapeAttr(c.email)}">${escapeHtml(c.name)} — ${c.assigned.length}/${c.seats}${c.assigned.length>=c.seats ? ' (full)':''}${(Number(c.reservedSeats)||0) > 0 ? ' — has a reserved seat' : ''}</option>`).join('')}
+            </select>
+          </div>
+          <div class="add-row">
+            <input type="text" class="note-input" data-rider-note="${loc.key}" maxlength="200" placeholder="Note (optional) — e.g. can't arrive until later" />
+          </div>
+          <div class="add-row">
+            <button class="btn secondary" data-add-rider="${loc.key}">Request a seat here</button>
+          </div>`;
+      } else {
+        signupHtml = `
+          <div class="add-row">
+            <input type="text" class="note-input" data-rider-note="${loc.key}" maxlength="200" placeholder="Note (optional) — e.g. can't arrive until later" />
+          </div>
+          <div class="add-row">
+            <button class="btn secondary" data-add-rider="${loc.key}">Request a seat here</button>
+          </div>`;
+      }
+    }
+
+    const pickupTime = (me.pickupTimes || {})[activeDay];
+
+    panel.innerHTML = `
+      <div class="loc-head">
+        <h2>${loc.label}</h2>
+        <div class="loc-count">${filledSeats}/${totalSeats||0} seats filled</div>
+      </div>
+      <div class="loc-subheading">${loc.subheading}${pickupTime ? ` — Car leaves at ${formatTime12h(pickupTime)}` : ''}</div>
+      ${gaugeHtml}
+      <div class="section-label">Drivers</div>
+      ${carsHtml}
+      ${waitingHtml}
+      ${signupHtml}
+    `;
+    wrap.appendChild(panel);
+  });
+
+  wrap.querySelectorAll('[data-remove-email]').forEach(el=>{
+    el.addEventListener('click', ()=> withBusy(el, '…', async ()=>{
+      await callServer('removeSignup', [el.dataset.removeDay, el.dataset.removeLoc, el.dataset.removeRole, el.dataset.removeEmail]);
+      await refresh();
+    }));
+  });
+  wrap.querySelectorAll('[data-add-driver]').forEach(el=>{
+    el.addEventListener('click', ()=> withBusy(el, 'Signing up…', ()=> addDriver(el.dataset.addDriver)));
+  });
+  wrap.querySelectorAll('[data-driver-seats]').forEach(sel=>{
+    sel.addEventListener('change', ()=>{
+      const btn = wrap.querySelector(`[data-add-driver="${sel.dataset.driverSeats}"]`);
+      if(!btn) return;
+      const val = parseInt(sel.value, 10);
+      const ok = val >= 1 && val <= 8;
+      btn.disabled = !ok;
+      btn.style.opacity = ok ? '1' : '0.5';
+      btn.style.cursor = ok ? 'pointer' : 'not-allowed';
+    });
+  });
+  wrap.querySelectorAll('[data-add-rider]').forEach(el=>{
+    el.addEventListener('click', ()=> withBusy(el, 'Signing up…', ()=> addRider(el.dataset.addRider)));
+  });
+  wrap.querySelectorAll('[data-edit-seats]').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      editingSeats.add(el.dataset.editSeats);
+      render();
+    });
+  });
+  wrap.querySelectorAll('[data-cancel-edit-seats]').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      editingSeats.delete(el.dataset.cancelEditSeats);
+      render();
+    });
+  });
+  wrap.querySelectorAll('[data-save-seats]').forEach(el=>{
+    el.addEventListener('click', ()=> withBusy(el, '…', async ()=>{
+      const loc = el.dataset.saveSeats;
+      const editKey = el.dataset.editKey;
+      const sel = document.querySelector(`[data-edit-seats-input="${editKey}"]`);
+      const seats = parseInt(sel.value, 10);
+      if(!seats || seats < 1 || seats > 8){ throw new Error('Choose a number of seats (1-8).'); }
+      const noteInput = document.querySelector(`[data-edit-note-input="${editKey}"]`);
+      const notes = noteInput ? noteInput.value.trim() : '';
+      await callServer('addSignup', [activeDay, loc, 'driver', seats, '', notes]);
+      editingSeats.delete(editKey);
+      await refresh();
+    }));
+  });
+  wrap.querySelectorAll('[data-admin-edit-driver]').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      adminEditingDriver.add(el.dataset.adminEditDriver);
+      render();
+    });
+  });
+  wrap.querySelectorAll('[data-admin-cancel-driver]').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      adminEditingDriver.delete(el.dataset.adminCancelDriver);
+      render();
+    });
+  });
+  wrap.querySelectorAll('[data-admin-save-driver]').forEach(el=>{
+    el.addEventListener('click', ()=> withBusy(el, '…', async ()=>{
+      const editKey = el.dataset.adminSaveDriver;
+      const day = el.dataset.adminSaveDay;
+      const loc = el.dataset.adminSaveLoc;
+      const driverEmail = el.dataset.adminSaveEmail;
+      const sel = document.querySelector(`[data-admin-edit-seats-input="${editKey}"]`);
+      const seats = parseInt(sel.value, 10);
+      if(!seats || seats < 1 || seats > 8){ throw new Error('Choose a number of seats (1-8).'); }
+      const noteInput = document.querySelector(`[data-admin-edit-note-input="${editKey}"]`);
+      const notes = noteInput ? noteInput.value.trim() : '';
+      await callServer('adminEditDriverSeats', [day, loc, driverEmail, seats, notes]);
+      adminEditingDriver.delete(editKey);
+      await refresh();
+    }));
+  });
+  wrap.querySelectorAll('.move-select').forEach(sel=>{
+    sel.addEventListener('change', async ()=>{
+      if(isBusy) return;
+      isBusy = true;
+      sel.disabled = true;
+      try{
+        await callServer('adminMoveRider', [sel.dataset.moveDay, sel.dataset.moveLoc, sel.dataset.moveRider, sel.dataset.moveFrom, sel.value]);
+        await refresh();
+      } catch(e){
+        alert(e.message || 'Could not move rider.');
+      } finally {
+        isBusy = false;
+      }
+    });
+  });
+  wrap.querySelectorAll('[data-release-driver]').forEach(el=>{
+    el.addEventListener('click', ()=> withBusy(el, '…', async ()=>{
+      await callServer('adminReleaseReservedSeat', [el.dataset.releaseDay, el.dataset.releaseLoc, el.dataset.releaseDriver]);
+      await refresh();
+    }));
+  });
+  wrap.querySelectorAll('[data-switch-email]').forEach(el=>{
+    el.addEventListener('click', ()=> withBusy(el, '…', async ()=>{
+      const targetEmail = el.dataset.switchEmail;
+      const isMine = me && targetEmail === me.email;
+      if(isMine){
+        await callServer('changeMyCampus', [el.dataset.switchDay, el.dataset.switchTo]);
+      } else {
+        await callServer('adminChangeCampus', [el.dataset.switchDay, targetEmail, el.dataset.switchTo]);
+      }
+      await refresh();
+    }));
+  });
+}
+
+let editingSeats = new Set(); // location keys currently showing the seat-edit form for a driver
+let adminEditingDriver = new Set(); // admin-edit keys currently showing the seat/note edit form for any driver's car
+let isBusy = false;
+async function withBusy(triggerEl, busyLabel, fn){
+  if(isBusy) return;
+  isBusy = true;
+  if(triggerEl.tagName === 'BUTTON') triggerEl.disabled = true;
+  triggerEl.style.opacity = '0.75';
+  triggerEl.style.pointerEvents = 'none';
+  triggerEl.innerHTML = '<span class="loading-dots"><span></span><span></span><span></span></span>';
+  try{
+    await fn();
+  } catch(e){
+    alert(e.message || 'Something went wrong.');
+  } finally {
+    isBusy = false;
+    renderCurrent();
+  }
+}
+
+async function addDriver(loc){
+  const seatsInput = document.querySelector(`[data-driver-seats="${loc}"]`);
+  const seats = parseInt(seatsInput.value, 10);
+  if(!seats || seats < 1 || seats > 8){ throw new Error('Choose a number of seats (1-8).'); }
+  const noteInput = document.querySelector(`[data-driver-note="${loc}"]`);
+  const notes = noteInput ? noteInput.value.trim() : '';
+  await callServer('saveProfile', [me.name, me.phone, me.car]);
+  await callServer('addSignup', [activeDay, loc, 'driver', seats, '', notes]);
+  await refresh();
+}
+async function addRider(loc){
+  const pickEl = document.querySelector(`[data-driver-pick="${loc}"]`);
+  const driverChoice = pickEl ? pickEl.value : '';
+  const noteInput = document.querySelector(`[data-rider-note="${loc}"]`);
+  const notes = noteInput ? noteInput.value.trim() : '';
+  await callServer('saveProfile', [me.name, me.phone, me.car]);
+  await callServer('addSignup', [activeDay, loc, 'rider', '', driverChoice, notes]);
+  await refresh();
+}
+async function addEventDriver(loc){
+  const seatsInput = document.querySelector(`[data-event-driver-seats="${loc}"]`);
+  const seats = parseInt(seatsInput.value, 10);
+  if(!seats || seats < 1 || seats > 8){ throw new Error('Choose a number of seats (1-8).'); }
+  const noteInput = document.querySelector(`[data-event-driver-note="${loc}"]`);
+  const notes = noteInput ? noteInput.value.trim() : '';
+  await callServer('saveProfile', [me.name, me.phone, me.car]);
+  await callServer('addEventSignup', [viewingEvent, loc, 'driver', seats, '', notes]);
+  await refreshEvent();
+}
+async function addEventRider(loc){
+  const pickEl = document.querySelector(`[data-event-driver-pick="${loc}"]`);
+  const driverChoice = pickEl ? pickEl.value : '';
+  const noteInput = document.querySelector(`[data-event-rider-note="${loc}"]`);
+  const notes = noteInput ? noteInput.value.trim() : '';
+  await callServer('saveProfile', [me.name, me.phone, me.car]);
+  await callServer('addEventSignup', [viewingEvent, loc, 'rider', '', driverChoice, notes]);
+  await refreshEvent();
+}
+
+document.getElementById('myName').addEventListener('change', async e=>{
+  me.name = e.target.value.trim();
+  try{
+    await callServer('saveProfile', [me.name, me.phone, me.car]);
+    const el = document.getElementById('nameStatus');
+    el.classList.add('show'); setTimeout(()=>el.classList.remove('show'),1200);
+  }catch(err){ alert('Could not save your name — try again: ' + (err.message || err)); }
+  renderCurrent();
+});
+document.getElementById('myPhone').addEventListener('input', e=>{
+  e.target.value = formatPhone(e.target.value);
+});
+document.getElementById('myPhone').addEventListener('change', async e=>{
+  me.phone = formatPhone(e.target.value);
+  e.target.value = me.phone;
+  try{
+    await callServer('saveProfile', [me.name, me.phone, me.car]);
+    const el = document.getElementById('phoneStatus');
+    el.classList.add('show'); setTimeout(()=>el.classList.remove('show'),1200);
+  }catch(err){ alert('Could not save your phone — try again: ' + (err.message || err)); }
+  renderCurrent();
+});
+document.getElementById('myCar').addEventListener('change', async e=>{
+  me.car = e.target.value.trim();
+  try{
+    await callServer('saveProfile', [me.name, me.phone, me.car]);
+    const el = document.getElementById('carStatus');
+    el.classList.add('show'); setTimeout(()=>el.classList.remove('show'),1200);
+  }catch(err){ alert('Could not save your car — try again: ' + (err.message || err)); }
+  renderCurrent();
+});
+document.querySelectorAll('.role-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    myRole = btn.dataset.role;
+    document.querySelectorAll('.role-btn').forEach(b=>b.classList.toggle('active', b.dataset.role===myRole));
+    renderCurrent();
+  });
+});
+document.getElementById('eventBackLink').addEventListener('click', closeEvent);
+
+// ---- hamburger menu: quick nav to weekly practices, upcoming events, and (for admins) whichever admin panels are currently showing ----
+function closeHamburgerMenu(){
+  document.getElementById('hamburgerMenu').style.display = 'none';
+}
+function buildHamburgerMenu(){
+  const menu = document.getElementById('hamburgerMenu');
+  if(!me){ menu.innerHTML = ''; return; }
+  let html = `<div class="hm-item" id="hmWeekly">🏠 Weekly Practices</div>`;
+  const upcoming = upcomingEvents();
+  html += `<div class="hm-divider"></div><div class="hm-section-label">Comps</div>`;
+  if(upcoming.length){
+    upcoming.forEach(ev=>{
+      html += `<div class="hm-item" data-hm-open-event="${escapeAttr(ev.id)}">🏆 ${escapeHtml(ev.name)}</div>`;
+    });
+  } else {
+    html += `<div class="hm-item hm-item-muted">Soon to come</div>`;
+  }
+  if(me.isAdmin){
+    const visiblePanels = [...document.querySelectorAll('#adminPanelWrap .admin-panel')].filter(p=>p.style.display !== 'none');
+    if(visiblePanels.length){
+      html += `<div class="hm-divider"></div><div class="hm-section-label">Admin</div>`;
+      visiblePanels.forEach((p, idx)=>{
+        const h3 = p.querySelector('h3');
+        const label = h3 ? h3.textContent.replace(/^Admin\s*—\s*/,'') : `Section ${idx+1}`;
+        html += `<div class="hm-item" data-hm-scroll-panel="${idx}">⚙️ ${escapeHtml(label)}</div>`;
+      });
+    }
+  }
+  menu.innerHTML = html;
+  const weeklyItem = document.getElementById('hmWeekly');
+  if(weeklyItem) weeklyItem.addEventListener('click', ()=>{
+    closeHamburgerMenu();
+    if(viewingEvent) closeEvent();
+    window.scrollTo({top:0, behavior:'smooth'});
+  });
+  menu.querySelectorAll('[data-hm-open-event]').forEach(el=>{
+    el.addEventListener('click', ()=>{ closeHamburgerMenu(); openEvent(el.dataset.hmOpenEvent); });
+  });
+  menu.querySelectorAll('[data-hm-scroll-panel]').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      closeHamburgerMenu();
+      const visiblePanels = [...document.querySelectorAll('#adminPanelWrap .admin-panel')].filter(p=>p.style.display !== 'none');
+      const target = visiblePanels[parseInt(el.dataset.hmScrollPanel, 10)];
+      if(target) target.scrollIntoView({behavior:'smooth', block:'start'});
+    });
+  });
+}
+document.getElementById('hamburgerBtn').addEventListener('click', (e)=>{
+  e.stopPropagation();
+  const menu = document.getElementById('hamburgerMenu');
+  const isOpen = menu.style.display !== 'none';
+  if(isOpen){ closeHamburgerMenu(); return; }
+  buildHamburgerMenu();
+  menu.style.display = 'block';
+});
+document.addEventListener('click', (e)=>{
+  const menu = document.getElementById('hamburgerMenu');
+  if(menu.style.display === 'none') return;
+  if(e.target === menu || menu.contains(e.target) || e.target.id === 'hamburgerBtn') return;
+  closeHamburgerMenu();
+});
+
+document.getElementById('signOutBtn').addEventListener('click', function(){
+  saveSession(null);
+  try { google.accounts.id.disableAutoSelect(); } catch (e) {}
+  location.reload();
+});
+(function start(){
+  const g = document.createElement('script'); g.src = 'https://accounts.google.com/gsi/client'; g.async = true; document.head.appendChild(g);
+  session = loadSession();
+  if (session) init(); else showSignIn();
+})();
+</script>
+</body>
+</html>
