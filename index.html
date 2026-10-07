@@ -304,7 +304,7 @@ input::placeholder,textarea::placeholder{color:var(--text-dim);opacity:1;}
     <p>Use your @umich.edu Google account. You'll stay signed in for about a month.</p>
     <div id="gsiBtn"></div>
     <div class="err" id="signinErr"></div>
-    <div class="fine">Michigan Climbing Team only.</div>
+    <div class="fine">Only Michigan Climbing Team members can use this page.</div>
   </div>
 
   <div id="gate" class="gate" style="display:none;">
@@ -449,7 +449,10 @@ async function callServer(fnName, args, extra){
   return out.result;
 }
 function showSignIn(msg){
-  ['gate','mainUI'].forEach(id => { const n = document.getElementById(id); if (n) n.style.display = 'none'; });
+  ['gate','mainUI','hamburgerBtn','hamburgerMenu'].forEach(id => { const n = document.getElementById(id); if (n) n.style.display = 'none'; });
+  // Same header as after sign-in: "Week of <Monday>"
+  const t = new Date(); const mon = new Date(t.getFullYear(), t.getMonth(), t.getDate() - ((t.getDay() + 6) % 7));
+  document.getElementById('weekRange').textContent = 'Week of ' + mon.toLocaleDateString('en-US', {month:'long', day:'numeric'});
   document.getElementById('signin').style.display = 'block';
   document.getElementById('signinErr').textContent = msg || '';
   renderGoogleButton();
@@ -460,7 +463,7 @@ function renderGoogleButton(){
     callback: r => {
       document.getElementById('signinErr').textContent = '';
       callServer('signIn', [], { idToken: r.credential })
-        .then(s => { saveSession(s); document.getElementById('signin').style.display = 'none'; init(); })
+        .then(s => { saveSession(s); document.getElementById('signin').style.display = 'none'; document.getElementById('hamburgerBtn').style.display = ''; init(); })
         .catch(e => { document.getElementById('signinErr').textContent = (e && e.message) || "Couldn't sign in."; });
     } });
   document.getElementById('gsiBtn').innerHTML = '';
