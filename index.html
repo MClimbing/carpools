@@ -3,7 +3,7 @@
 <head>
 <base target="_top">
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Michigan Climbing Carpools</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;500;600;700&display=swap');
@@ -16,7 +16,7 @@
   --green:#4caf7d; --amber:#f2b94d; --red:#ff6b6b; --radius:10px;
 }
 *{box-sizing:border-box;}
-html{background:var(--bg);min-height:100vh;height:100%;-webkit-text-size-adjust:100%;text-size-adjust:100%;}
+html{background:var(--bg);min-height:100vh;height:100%;}
 body{margin:0;background:var(--bg);color:var(--text);font-family:'Inter',system-ui,sans-serif;min-height:100vh;height:100%;-webkit-font-smoothing:antialiased;overflow-x:hidden;}
 .app{max-width:760px;margin:0 auto;padding:calc(env(safe-area-inset-top,0px) + 44px) 16px 60px;}
 header{border-bottom:1px solid var(--line);padding-bottom:16px;margin-bottom:18px;display:flex;align-items:center;gap:14px;position:relative;}
@@ -191,6 +191,8 @@ details[open] > .dropdown-row .dd-chevron{transform:rotate(180deg);}
 .day-lock-schedule select{background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:6px 8px;color:var(--text);font-size:12.5px;outline:none;}
 .admin-add{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px;}
 .admin-add input,.admin-add select{flex:1;min-width:120px;max-width:100%;background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:8px 10px;color:var(--text);font-size:13px;outline:none;}
+/* Same phone text size as the attendance site (boxes at 16px); the small rider dropdowns keep their own size */
+@media (max-width:700px){ input:not([type=checkbox]):not([type=radio]), select, textarea{font-size:16px !important;} }
 /* Save buttons sit on the right; on phones the two email boxes get a full line each so the whole text is reachable */
 .day-lock-schedule .btn{margin-left:auto;}
 .mail-settings .btn{margin-left:auto;}
