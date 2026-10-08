@@ -196,7 +196,11 @@ details[open] > .dropdown-row .dd-chevron{transform:rotate(180deg);}
 /* Save buttons sit on the right; on phones the two email boxes get a full line each so the whole text is reachable */
 .day-lock-schedule .btn{margin-left:auto;}
 .mail-settings .btn{margin-left:auto;}
-@media (max-width:700px){ .mail-settings input{flex:1 1 100%;min-width:100%;} }
+@media (max-width:700px){
+  .mail-settings #mailSenderName{flex:1 1 100%;min-width:100%;}
+  .mail-settings #mailReplyTo{flex:1 1 0;min-width:0;}
+  .mail-settings .btn{flex:none;margin-left:0;}
+}
 .admin-add input[type="checkbox"]{flex:none;min-width:0;width:15px;height:15px;padding:0;accent-color:var(--blue);}
 .email-day-row{display:flex;flex-wrap:wrap;align-items:center;gap:14px;margin-top:12px;}
 
