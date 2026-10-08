@@ -194,6 +194,9 @@ details[open] > .dropdown-row .dd-chevron{transform:rotate(180deg);}
 /* Same phone text size as the attendance site (boxes at 16px); the small rider dropdowns keep their own size */
 @media (max-width:700px){ input:not([type=checkbox]):not([type=radio]), select, textarea{font-size:16px !important;} }
 /* Save buttons sit on the right; on phones the two email boxes get a full line each so the whole text is reachable */
+.mail-divider{border-top:1px solid var(--line);margin:16px 0 14px;}
+.mail-label{font-family:'JetBrains Mono',monospace;font-size:10.5px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.1em;}
+.mail-label + .admin-add{margin-top:8px;}
 .day-lock-schedule .btn{margin-left:auto;}
 .mail-settings .btn{margin-left:auto;}
 @media (max-width:700px){
@@ -1342,7 +1345,8 @@ function renderAdminPanel(){
             <input type="checkbox" class="email-day-check" value="${d.key}" checked /> ${d.key.slice(0,3)}
           </label>`).join('')}
       </div>
-      <div class="sub" style="margin-top:14px;">Emails come from the club account. Set the name people see and where replies go (update this when officers change):</div>
+      <div class="mail-divider"></div>
+      <div class="mail-label">Emails</div>
       <div class="admin-add mail-settings">
         <input type="text" id="mailSenderName" placeholder="Sender name" value="${escapeAttr((me.mail && me.mail.senderName) || '')}" />
         <input type="text" id="mailReplyTo" placeholder="Replies go to (uniqname or email)" value="${escapeAttr((me.mail && me.mail.replyTo) || '')}" />
