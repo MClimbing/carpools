@@ -1216,40 +1216,51 @@ function formatWeekKeyLabel(weekKey){
 // (bold/lists survive pasting into Gmail), phone numbers included.
 function buildEventCarpoolText(){
   const ev = activeEvent || {};
-  const when = (ev.eventDate ? formatEventDateLabel(ev.eventDate) : '') + (ev.pickupTime ? ' · ' + formatTime12h(ev.pickupTime) : '');
-  const ph = p => p ? ' (' + p + ')' : '';
-  const cell = 'border:1px solid #999;padding:6px 8px;vertical-align:top;text-align:left;';
-  const t = [], h = [];
-  t.push((ev.name || 'Comp') + ' — carpools'); if(when) t.push(when);
-  h.push('<p><b>' + escapeHtml(ev.name || 'Comp') + ' — carpools</b>' + (when ? '<br>' + escapeHtml(when) : '') + '</p>');
+  const link = location.origin + location.pathname + '?event=' + encodeURIComponent(viewingEvent);
+  // One block per car (driver first, then riders); a car with nobody riding
+  // along is labelled "Travel separate". Waitlisted people get their own block.
+  const blocks = [];
   LOCATIONS.forEach(loc=>{
     const drivers = eventRows.filter(r=>r.location===loc.key && r.role==='driver').sort(sortByTs);
     const riders = eventRows.filter(r=>r.location===loc.key && r.role==='rider').sort(sortByTs);
     const {cars, waiting} = computeAssignments(drivers, riders);
-    t.push('', loc.label + ' — ' + loc.subheading);
-    h.push('<p><b>' + escapeHtml(loc.label) + '</b> — ' + escapeHtml(loc.subheading) + '</p>');
-    if(!cars.length && !waiting.length){ t.push('No drivers yet.'); h.push('<p><i>No drivers yet.</i></p>'); return; }
-    const head = ['Car', 'Driver', 'Phone', 'Vehicle', 'Seats', 'Riders', 'Notes'];
-    t.push(head.join('\t'));
-    let rows = '<tr>' + head.map(x=>'<th style="' + cell + 'background:#eee;">' + x + '</th>').join('') + '</tr>';
-    cars.forEach((car, i)=>{
-      const seats = Number(car.seats)||0;
-      const rl = car.assigned.map(r=> r.name + ph(r.phone) + (r.hybridStop ? ' [' + locationLabel(r.hybridStop) + ']' : ''));
-      const open = seats - car.assigned.length;
-      if(open > 0) rl.push(open + ' open seat' + (open===1?'':'s'));
-      const note = [car.hybridSecondLocation ? 'Hybrid — also picks up at ' + locationLabel(car.hybridSecondLocation) : '', car.notes || ''].filter(Boolean).join('; ');
-      const vals = [String(i+1), car.name, car.phone || '', car.car || '', String(seats), rl.join('; '), note];
-      t.push(vals.map(v=>v.replace(/\t/g,' ')).join('\t'));
-      rows += '<tr>' + vals.map((v, j)=> '<td style="' + cell + '">' + (j===5 ? rl.map(escapeHtml).join('<br>') : escapeHtml(v)) + '</td>').join('') + '</tr>';
+    const short = loc.label.replace(' Campus','');
+    let carNo = 0;
+    cars.forEach(car=>{
+      blocks.push({
+        title: car.assigned.length ? short + ' car ' + (++carNo) : 'Travel separate',
+        people: [[car.name, car.phone || '']].concat(car.assigned.map(r=>[r.name, r.phone || '']))
+      });
     });
-    waiting.forEach((r, i)=>{
-      const vals = ['Waitlist ' + (i+1), r.name, r.phone || '', '', '', '', ''];
-      t.push(vals.join('\t'));
-      rows += '<tr>' + vals.map(v=>'<td style="' + cell + 'font-style:italic;">' + escapeHtml(v) + '</td>').join('') + '</tr>';
-    });
-    h.push('<table style="border-collapse:collapse;font-size:13px;">' + rows + '</table>');
+    if(waiting.length) blocks.push({title: short + ' waitlist', people: waiting.map(r=>[r.name, r.phone || '']), waitlist: true});
   });
-  return {text: t.join('\n'), html: h.join('')};
+  const orange = 'background:#ff9900;color:#fff;font-weight:bold;text-align:center;text-transform:uppercase;';
+  const cell = 'border:1px solid #ccc;padding:4px 8px;';
+  const none = 'border:none;';
+  const t = [(ev.name || 'Comp') + ' — live manifest: ' + link, ''];
+  let rows = '';
+  for(let i=0; i<blocks.length; i+=2){
+    const pair = [blocks[i], blocks[i+1] || null];
+    t.push(pair.map(b=> b ? b.title.toUpperCase() + '\t' : '\t').join('\t'));
+    rows += '<tr>' + pair.map(b=> b ? '<td colspan="2" style="' + cell + orange + '">' + escapeHtml(b.title) + '</td>' : '<td colspan="2" style="' + none + '"></td>').join('') + '</tr>';
+    const n = Math.max(pair[0].people.length, pair[1] ? pair[1].people.length : 0);
+    for(let k=0; k<n; k++){
+      const tl = []; let tr = '<tr>';
+      pair.forEach(b=>{
+        const p = b && b.people[k];
+        if(!p){ tl.push('', ''); const st = b ? cell : none; tr += '<td style="' + st + '"></td><td style="' + st + '"></td>'; return; }
+        const strong = (k===0 && !b.waitlist);
+        const st = cell + (strong ? 'font-weight:bold;' : 'color:#666;' + (k%2===0 ? 'background:#f3f3f3;' : ''));
+        tl.push(p[0], p[1]);
+        tr += '<td style="' + st + '">' + escapeHtml(p[0]) + '</td><td style="' + st + 'text-align:right;">' + escapeHtml(p[1]) + '</td>';
+      });
+      t.push(tl.join('\t'));
+      rows += tr + '</tr>';
+    }
+  }
+  const html = '<p><b>' + escapeHtml(ev.name || 'Comp') + '</b> — <a href="' + escapeAttr(link) + '">View the live manifest</a></p>'
+    + '<table style="border-collapse:collapse;font-size:13px;">' + rows + '</table>';
+  return {text: t.join('\n'), html: html};
 }
 function renderAdminPanel(){
   const wrap = document.getElementById('adminPanelWrap');
