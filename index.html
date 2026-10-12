@@ -1219,7 +1219,7 @@ function buildEventCarpoolText(){
   const link = location.origin + location.pathname + '?event=' + encodeURIComponent(viewingEvent);
   // One block per car (driver first, then riders); a car with nobody riding
   // along is labelled "Travel separate". Waitlisted people get their own block.
-  const blocks = [];
+  const blocks = [], general = [];
   LOCATIONS.forEach(loc=>{
     const drivers = eventRows.filter(r=>r.location===loc.key && r.role==='driver').sort(sortByTs);
     const riders = eventRows.filter(r=>r.location===loc.key && r.role==='rider').sort(sortByTs);
@@ -1229,17 +1229,14 @@ function buildEventCarpoolText(){
     let carNo = 0;
     const where = (loc.subheading || '').replace(/^Pick up at /i, '');
     const t0 = ev.pickupTime || '';
+    if(cars.some(c=>c.assigned.length)) general.push(short + ' cars leave from ' + where + (t0 ? ' at ' + formatTime12h(t0) : ''));
     cars.forEach(car=>{
       const together = car.assigned.length > 0;
       let sub = '';
-      if(together && t0){
+      if(together && t0){   // only hybrids get their own leave-time line; everyone else is covered by the general line up top
         if(car.hybridSecondLocation){
           sub = 'Leaves ' + formatTime12h(offsetTimeMinutes(t0, -HYBRID_OFFSET_MINUTES)) + ' from ' + where + ', then ' + formatTime12h(t0) + ' from ' + locationLabel(car.hybridSecondLocation).replace(' Campus','');
-        } else {
-          sub = 'Leaves ' + formatTime12h(t0) + (where ? ' from ' + where : '');
         }
-      } else if(together && where){
-        sub = 'Meet at ' + where;
       }
       const people = [[car.name, car.phone || '']];
       car.assigned.forEach(r=>people.push([r.name, r.phone || '']));
@@ -1254,7 +1251,7 @@ function buildEventCarpoolText(){
   const head = 'font-weight:bold;text-align:center;';
   const cell = 'border:1px solid #ccc;padding:3px 8px;white-space:nowrap;';
   const none = 'border:none;';
-  const t = ['View the live manifest to see notes: ' + link];
+  const t = ['View the live manifest to see notes: ' + link].concat(general);
   let rows = '';
   for(let i=0; i<blocks.length; i+=2){
     const pair = [blocks[i], blocks[i+1] || null];
@@ -1262,7 +1259,7 @@ function buildEventCarpoolText(){
     rows += '<tr>' + pair.map(b=> b ? '<td colspan="2" style="' + cell + head + b.color + '">' + escapeHtml(b.title) + '</td>' : '<td colspan="2" style="' + none + '"></td>').join('') + '</tr>';
     if(pair.some(b=>b && b.sub)){
       t.push(pair.map(b=> b ? (b.sub || '') + '\t' : '\t').join('\t'));
-      rows += '<tr>' + pair.map(b=> b ? '<td colspan="2" style="' + cell + 'text-align:center;font-size:12px;color:#444;background:#fafafa;white-space:normal;">' + escapeHtml(b.sub || '') + '</td>' : '<td colspan="2" style="' + none + '"></td>').join('') + '</tr>';
+      rows += '<tr>' + pair.map(b=> b ? '<td colspan="2" style="' + cell + 'text-align:center;font-size:12px;color:#444;white-space:normal;' + (b.sub ? 'background:#fafafa;' : 'border-top:none;border-bottom:none;') + '">' + escapeHtml(b.sub || '') + '</td>' : '<td colspan="2" style="' + none + '"></td>').join('') + '</tr>';
     }
     const n = Math.max(pair[0].people.length, pair[1] ? pair[1].people.length : 0);
     for(let k=0; k<n; k++){
@@ -1283,6 +1280,7 @@ function buildEventCarpoolText(){
     }
   }
   const html = '<p style="margin:0 0 6px 0;"><a href="' + escapeAttr(link) + '">View the live manifest</a> to see notes</p>'
+    + (general.length ? '<p style="margin:0 0 6px 0;">' + general.map(escapeHtml).join('<br>') + '</p>' : '')
     + '<table style="border-collapse:collapse;font-size:13px;width:620px;table-layout:fixed;margin:0;">'
     + '<colgroup><col style="width:170px;"><col style="width:140px;"><col style="width:170px;"><col style="width:140px;"></colgroup>' + rows + '</table>';
   return {text: t.join('\n'), html: html};
