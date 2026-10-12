@@ -1226,7 +1226,7 @@ function buildEventCarpoolText(){
     const {cars, waiting} = computeAssignments(drivers, riders);
     const short = loc.label.replace(' Campus','');
     const color = loc.key==='north' ? 'background:#ffcb05;color:#00274c;' : 'background:#00274c;color:#fff;';
-    let carNo = 0;
+    let carNo = 0, hybNo = 0;
     const where = (loc.subheading || '').replace(/^Pick up at /i, '');
     const t0 = ev.pickupTime || '';
     if(cars.some(c=>c.assigned.length)) general.push(short + ' cars leave from ' + where + (t0 ? ' at ' + formatTime12h(t0) : ''));
@@ -1241,8 +1241,8 @@ function buildEventCarpoolText(){
       const people = [[car.name, car.phone || '']];
       car.assigned.forEach(r=>people.push([r.name, r.phone || '']));
       blocks.push({
-        color: color, sub: sub,
-        title: (together ? short + ' car ' + (++carNo) : short + ' travel separate').toUpperCase(),
+        color: (together && car.hybridSecondLocation) ? 'background:#2e7d32;color:#fff;' : color, sub: sub,
+        title: (!together ? short + ' travel separate' : car.hybridSecondLocation ? short + ' hybrid car ' + (++hybNo) : short + ' car ' + (++carNo)).toUpperCase(),
         people: people
       });
     });
