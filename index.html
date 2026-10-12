@@ -1212,6 +1212,45 @@ function formatWeekKeyLabel(weekKey){
     return 'Week of ' + d.toLocaleDateString('en-US', {month:'long', day:'numeric', year:'numeric'});
   }catch(e){ return weekKey; }
 }
+// Admin-only: the open comp's carpools as clean plain text + simple HTML
+// (bold/lists survive pasting into Gmail), phone numbers included.
+function buildEventCarpoolText(){
+  const ev = activeEvent || {};
+  const when = (ev.eventDate ? formatEventDateLabel(ev.eventDate) : '') + (ev.pickupTime ? ' · ' + formatTime12h(ev.pickupTime) : '');
+  const ph = p => p ? ' (' + p + ')' : '';
+  const t = [], h = [];
+  t.push((ev.name || 'Comp') + ' — carpools'); if(when) t.push(when);
+  h.push('<p><b>' + escapeHtml(ev.name || 'Comp') + ' — carpools</b>' + (when ? '<br>' + escapeHtml(when) : '') + '</p>');
+  LOCATIONS.forEach(loc=>{
+    const drivers = eventRows.filter(r=>r.location===loc.key && r.role==='driver').sort(sortByTs);
+    const riders = eventRows.filter(r=>r.location===loc.key && r.role==='rider').sort(sortByTs);
+    const {cars, waiting} = computeAssignments(drivers, riders);
+    t.push('', loc.label.toUpperCase() + ' — ' + loc.subheading);
+    h.push('<p><b>' + escapeHtml(loc.label) + '</b> — ' + escapeHtml(loc.subheading) + '</p>');
+    if(!cars.length){ t.push('No drivers yet.'); h.push('<p><i>No drivers yet.</i></p>'); }
+    cars.forEach((car, i)=>{
+      const seats = Number(car.seats)||0;
+      const head = 'Car ' + (i+1) + ': ' + car.name + ph(car.phone) + (car.car ? ' · ' + car.car : '') + ' · ' + seats + ' seat' + (seats===1?'':'s');
+      t.push(head);
+      let li = '';
+      if(car.hybridSecondLocation) t.push('  Hybrid pickup — also picks up at ' + locationLabel(car.hybridSecondLocation));
+      if(car.notes) t.push('  Note: ' + car.notes);
+      car.assigned.forEach(r=>{
+        t.push('  - ' + r.name + ph(r.phone) + (r.hybridStop ? ' [' + locationLabel(r.hybridStop) + ']' : ''));
+        li += '<li>' + escapeHtml(r.name + ph(r.phone) + (r.hybridStop ? ' [' + locationLabel(r.hybridStop) + ']' : '')) + '</li>';
+      });
+      const open = seats - car.assigned.length;
+      if(open > 0){ t.push('  - ' + open + ' open seat' + (open===1?'':'s')); li += '<li><i>' + open + ' open seat' + (open===1?'':'s') + '</i></li>'; }
+      h.push('<p><b>' + escapeHtml(head) + '</b>' + (car.notes ? '<br><i>Note: ' + escapeHtml(car.notes) + '</i>' : '') + '</p><ul>' + li + '</ul>');
+    });
+    if(waiting.length){
+      t.push('Waitlist:');
+      waiting.forEach((r, i)=> t.push('  ' + (i+1) + '. ' + r.name + ph(r.phone)));
+      h.push('<p><b>Waitlist</b></p><ol>' + waiting.map(r=>'<li>' + escapeHtml(r.name + ph(r.phone)) + '</li>').join('') + '</ol>');
+    }
+  });
+  return {text: t.join('\n'), html: h.join('')};
+}
 function renderAdminPanel(){
   const wrap = document.getElementById('adminPanelWrap');
   if(!me.isAdmin){ wrap.innerHTML=''; return; }
@@ -1233,6 +1272,7 @@ function renderAdminPanel(){
           : `<button class="btn secondary" id="lockEventBtn">Lock this comp now</button>`}
         <button class="btn secondary" id="sendEventEmailsNowBtn">Send manifest emails now</button>
         <button class="btn secondary" id="sendEventTestEmailBtn">Send me a test email</button>
+        <button class="btn secondary" id="copyEventCarpoolsBtn">Copy carpools for email</button>
       </div>
     </div>
     <div class="admin-panel">
@@ -2047,6 +2087,36 @@ function renderAdminPanel(){
         await callServer('adminSendEventTestEmail', [viewingEvent]);
         alert('Test email sent to you.');
       });
+    });
+  }
+  const copyEventCarpoolsBtn = document.getElementById('copyEventCarpoolsBtn');
+  if(copyEventCarpoolsBtn){
+    copyEventCarpoolsBtn.addEventListener('click', async function(){
+      const btn = this, orig = btn.textContent;
+      const built = buildEventCarpoolText();
+      let ok = false;
+      try{
+        if(window.ClipboardItem && navigator.clipboard && navigator.clipboard.write){
+          await navigator.clipboard.write([new ClipboardItem({
+            'text/html': new Blob([built.html], {type:'text/html'}),
+            'text/plain': new Blob([built.text], {type:'text/plain'})
+          })]);
+          ok = true;
+        }
+      }catch(e){}
+      if(!ok){
+        try{ await navigator.clipboard.writeText(built.text); ok = true; }catch(e){}
+      }
+      if(!ok){
+        // last resort: select-and-copy from a temporary textarea
+        const ta = document.createElement('textarea');
+        ta.value = built.text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+        document.body.appendChild(ta); ta.select();
+        try{ ok = document.execCommand('copy'); }catch(e){}
+        document.body.removeChild(ta);
+      }
+      btn.textContent = ok ? 'Copied ✓' : 'Copy failed';
+      setTimeout(()=>{ btn.textContent = orig; }, 2000);
     });
   }
   const clearEventBtn = document.getElementById('clearEventBtn');
