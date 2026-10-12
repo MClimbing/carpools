@@ -1234,7 +1234,7 @@ function buildEventCarpoolText(){
       let sub = '';
       if(together && t0){
         if(car.hybridSecondLocation){
-          sub = 'Leaves ' + formatTime12h(offsetTimeMinutes(t0, -HYBRID_OFFSET_MINUTES)) + ' from ' + where + ', then ' + formatTime12h(t0) + ' from ' + locationLabel(car.hybridSecondLocation);
+          sub = 'Leaves ' + formatTime12h(offsetTimeMinutes(t0, -HYBRID_OFFSET_MINUTES)) + ' from ' + where + ', then ' + formatTime12h(t0) + ' from ' + locationLabel(car.hybridSecondLocation).replace(' Campus','');
         } else {
           sub = 'Leaves ' + formatTime12h(t0) + (where ? ' from ' + where : '');
         }
@@ -1262,7 +1262,7 @@ function buildEventCarpoolText(){
     rows += '<tr>' + pair.map(b=> b ? '<td colspan="2" style="' + cell + head + b.color + '">' + escapeHtml(b.title) + '</td>' : '<td colspan="2" style="' + none + '"></td>').join('') + '</tr>';
     if(pair.some(b=>b && b.sub)){
       t.push(pair.map(b=> b ? (b.sub || '') + '\t' : '\t').join('\t'));
-      rows += '<tr>' + pair.map(b=> b ? '<td colspan="2" style="' + cell + 'text-align:center;font-size:12px;color:#444;background:#fafafa;">' + escapeHtml(b.sub || '') + '</td>' : '<td colspan="2" style="' + none + '"></td>').join('') + '</tr>';
+      rows += '<tr>' + pair.map(b=> b ? '<td colspan="2" style="' + cell + 'text-align:center;font-size:12px;color:#444;background:#fafafa;white-space:normal;">' + escapeHtml(b.sub || '') + '</td>' : '<td colspan="2" style="' + none + '"></td>').join('') + '</tr>';
     }
     const n = Math.max(pair[0].people.length, pair[1] ? pair[1].people.length : 0);
     for(let k=0; k<n; k++){
