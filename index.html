@@ -1227,11 +1227,27 @@ function buildEventCarpoolText(){
     const short = loc.label.replace(' Campus','');
     const color = loc.key==='north' ? 'background:#ffcb05;color:#00274c;' : 'background:#00274c;color:#fff;';
     let carNo = 0;
+    const where = (loc.subheading || '').replace(/^Pick up at /i, '');
+    const t0 = ev.pickupTime || '';
     cars.forEach(car=>{
+      const together = car.assigned.length > 0;
+      let sub = '';
+      if(together && t0){
+        if(car.hybridSecondLocation){
+          sub = 'Leaves ' + formatTime12h(offsetTimeMinutes(t0, -HYBRID_OFFSET_MINUTES)) + ' from ' + where + ', then ' + formatTime12h(t0) + ' from ' + locationLabel(car.hybridSecondLocation);
+        } else {
+          sub = 'Leaves ' + formatTime12h(t0) + (where ? ' from ' + where : '');
+        }
+      } else if(together && where){
+        sub = 'Meet at ' + where;
+      }
+      const people = [[car.name, car.phone || '']];
+      if(car.notes) people.push([car.notes, '', 'note']);   // driver notes only; riders' private notes stay out of the email
+      car.assigned.forEach(r=>people.push([r.name, r.phone || '']));
       blocks.push({
-        color: color,
-        title: (car.assigned.length ? short + ' car ' + (++carNo) : short + ' travel separate').toUpperCase(),
-        people: [[car.name, car.phone || '']].concat(car.assigned.map(r=>[r.name, r.phone || '']))
+        color: color, sub: sub,
+        title: (together ? short + ' car ' + (++carNo) : short + ' travel separate').toUpperCase(),
+        people: people
       });
     });
     if(waiting.length) blocks.push({color: color, title: (short + ' waitlist').toUpperCase(), people: waiting.map(r=>[r.name, r.phone || '']), waitlist: true});
@@ -1245,12 +1261,19 @@ function buildEventCarpoolText(){
     const pair = [blocks[i], blocks[i+1] || null];
     t.push(pair.map(b=> b ? b.title + '\t' : '\t').join('\t'));
     rows += '<tr>' + pair.map(b=> b ? '<td colspan="2" style="' + cell + head + b.color + '">' + escapeHtml(b.title) + '</td>' : '<td colspan="2" style="' + none + '"></td>').join('') + '</tr>';
+    if(pair.some(b=>b && b.sub)){
+      t.push(pair.map(b=> b ? (b.sub || '') + '\t' : '\t').join('\t'));
+      rows += '<tr>' + pair.map(b=> b ? '<td colspan="2" style="' + cell + 'text-align:center;font-size:12px;color:#444;background:#fafafa;">' + escapeHtml(b.sub || '') + '</td>' : '<td colspan="2" style="' + none + '"></td>').join('') + '</tr>';
+    }
     const n = Math.max(pair[0].people.length, pair[1] ? pair[1].people.length : 0);
     for(let k=0; k<n; k++){
       const tl = []; let tr = '<tr>';
       pair.forEach(b=>{
         const p = b && b.people[k];
         if(!p){ tl.push('', ''); const st = b ? cell : none; tr += '<td style="' + st + '"></td><td style="' + st + '"></td>'; return; }
+        if(p[2] === 'note'){
+          tl.push(p[0], ''); tr += '<td colspan="2" style="' + cell + 'white-space:normal;font-style:italic;font-size:12px;color:#666;">Note: ' + escapeHtml(p[0]) + '</td>'; return;
+        }
         const strong = (k===0 && !b.waitlist);
         const st = cell + (strong ? 'font-weight:bold;' : 'color:#666;' + (k%2===0 ? 'background:#f3f3f3;' : ''));
         tl.push(p[0], p[1]);
