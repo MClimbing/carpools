@@ -1242,7 +1242,6 @@ function buildEventCarpoolText(){
         sub = 'Meet at ' + where;
       }
       const people = [[car.name, car.phone || '']];
-      if(car.notes) people.push([car.notes, '', 'note']);   // driver notes only; riders' private notes stay out of the email
       car.assigned.forEach(r=>people.push([r.name, r.phone || '']));
       blocks.push({
         color: color, sub: sub,
@@ -1255,7 +1254,7 @@ function buildEventCarpoolText(){
   const head = 'font-weight:bold;text-align:center;';
   const cell = 'border:1px solid #ccc;padding:3px 8px;white-space:nowrap;';
   const none = 'border:none;';
-  const t = [(ev.name || 'Comp') + ' — live manifest: ' + link];
+  const t = ['View the live manifest to see notes: ' + link];
   let rows = '';
   for(let i=0; i<blocks.length; i+=2){
     const pair = [blocks[i], blocks[i+1] || null];
@@ -1283,7 +1282,7 @@ function buildEventCarpoolText(){
       rows += tr + '</tr>';
     }
   }
-  const html = '<p style="margin:0 0 6px 0;"><b>' + escapeHtml(ev.name || 'Comp') + '</b> — <a href="' + escapeAttr(link) + '">View the live manifest</a></p>'
+  const html = '<p style="margin:0 0 6px 0;"><a href="' + escapeAttr(link) + '">View the live manifest</a> to see notes</p>'
     + '<table style="border-collapse:collapse;font-size:13px;width:620px;table-layout:fixed;margin:0;">'
     + '<colgroup><col style="width:170px;"><col style="width:140px;"><col style="width:170px;"><col style="width:140px;"></colgroup>' + rows + '</table>';
   return {text: t.join('\n'), html: html};
