@@ -1218,6 +1218,7 @@ function buildEventCarpoolText(){
   const ev = activeEvent || {};
   const when = (ev.eventDate ? formatEventDateLabel(ev.eventDate) : '') + (ev.pickupTime ? ' · ' + formatTime12h(ev.pickupTime) : '');
   const ph = p => p ? ' (' + p + ')' : '';
+  const cell = 'border:1px solid #999;padding:6px 8px;vertical-align:top;text-align:left;';
   const t = [], h = [];
   t.push((ev.name || 'Comp') + ' — carpools'); if(when) t.push(when);
   h.push('<p><b>' + escapeHtml(ev.name || 'Comp') + ' — carpools</b>' + (when ? '<br>' + escapeHtml(when) : '') + '</p>');
@@ -1225,29 +1226,28 @@ function buildEventCarpoolText(){
     const drivers = eventRows.filter(r=>r.location===loc.key && r.role==='driver').sort(sortByTs);
     const riders = eventRows.filter(r=>r.location===loc.key && r.role==='rider').sort(sortByTs);
     const {cars, waiting} = computeAssignments(drivers, riders);
-    t.push('', loc.label.toUpperCase() + ' — ' + loc.subheading);
+    t.push('', loc.label + ' — ' + loc.subheading);
     h.push('<p><b>' + escapeHtml(loc.label) + '</b> — ' + escapeHtml(loc.subheading) + '</p>');
-    if(!cars.length){ t.push('No drivers yet.'); h.push('<p><i>No drivers yet.</i></p>'); }
+    if(!cars.length && !waiting.length){ t.push('No drivers yet.'); h.push('<p><i>No drivers yet.</i></p>'); return; }
+    const head = ['Car', 'Driver', 'Phone', 'Vehicle', 'Seats', 'Riders', 'Notes'];
+    t.push(head.join('\t'));
+    let rows = '<tr>' + head.map(x=>'<th style="' + cell + 'background:#eee;">' + x + '</th>').join('') + '</tr>';
     cars.forEach((car, i)=>{
       const seats = Number(car.seats)||0;
-      const head = 'Car ' + (i+1) + ': ' + car.name + ph(car.phone) + (car.car ? ' · ' + car.car : '') + ' · ' + seats + ' seat' + (seats===1?'':'s');
-      t.push(head);
-      let li = '';
-      if(car.hybridSecondLocation) t.push('  Hybrid pickup — also picks up at ' + locationLabel(car.hybridSecondLocation));
-      if(car.notes) t.push('  Note: ' + car.notes);
-      car.assigned.forEach(r=>{
-        t.push('  - ' + r.name + ph(r.phone) + (r.hybridStop ? ' [' + locationLabel(r.hybridStop) + ']' : ''));
-        li += '<li>' + escapeHtml(r.name + ph(r.phone) + (r.hybridStop ? ' [' + locationLabel(r.hybridStop) + ']' : '')) + '</li>';
-      });
+      const rl = car.assigned.map(r=> r.name + ph(r.phone) + (r.hybridStop ? ' [' + locationLabel(r.hybridStop) + ']' : ''));
       const open = seats - car.assigned.length;
-      if(open > 0){ t.push('  - ' + open + ' open seat' + (open===1?'':'s')); li += '<li><i>' + open + ' open seat' + (open===1?'':'s') + '</i></li>'; }
-      h.push('<p><b>' + escapeHtml(head) + '</b>' + (car.notes ? '<br><i>Note: ' + escapeHtml(car.notes) + '</i>' : '') + '</p><ul>' + li + '</ul>');
+      if(open > 0) rl.push(open + ' open seat' + (open===1?'':'s'));
+      const note = [car.hybridSecondLocation ? 'Hybrid — also picks up at ' + locationLabel(car.hybridSecondLocation) : '', car.notes || ''].filter(Boolean).join('; ');
+      const vals = [String(i+1), car.name, car.phone || '', car.car || '', String(seats), rl.join('; '), note];
+      t.push(vals.map(v=>v.replace(/\t/g,' ')).join('\t'));
+      rows += '<tr>' + vals.map((v, j)=> '<td style="' + cell + '">' + (j===5 ? rl.map(escapeHtml).join('<br>') : escapeHtml(v)) + '</td>').join('') + '</tr>';
     });
-    if(waiting.length){
-      t.push('Waitlist:');
-      waiting.forEach((r, i)=> t.push('  ' + (i+1) + '. ' + r.name + ph(r.phone)));
-      h.push('<p><b>Waitlist</b></p><ol>' + waiting.map(r=>'<li>' + escapeHtml(r.name + ph(r.phone)) + '</li>').join('') + '</ol>');
-    }
+    waiting.forEach((r, i)=>{
+      const vals = ['Waitlist ' + (i+1), r.name, r.phone || '', '', '', '', ''];
+      t.push(vals.join('\t'));
+      rows += '<tr>' + vals.map(v=>'<td style="' + cell + 'font-style:italic;">' + escapeHtml(v) + '</td>').join('') + '</tr>';
+    });
+    h.push('<table style="border-collapse:collapse;font-size:13px;">' + rows + '</table>');
   });
   return {text: t.join('\n'), html: h.join('')};
 }
