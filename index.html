@@ -731,7 +731,7 @@ function renderEventBanner(){
     <div class="event-banner-card" data-open-event="${escapeAttr(first.id)}">
       <div>
         <div class="ebc-title">🏆 ${escapeHtml(first.name)}</div>
-        <div class="ebc-sub">${escapeHtml(formatEventDateLabel(first.eventDate))}${first.pickupTime ? ' · car leaves at ' + escapeHtml(formatTime12h(first.pickupTime)) : ''} · Tap to sign up</div>
+        <div class="ebc-sub">${escapeHtml(formatEventDateLabel(first.eventDate))}${first.pickupTime ? ' · Car leaves at ' + escapeHtml(formatTime12h(first.pickupTime)) : ''} · Tap to sign up</div>
       </div>
       <div class="ebc-arrow">→</div>
     </div>
@@ -740,7 +740,7 @@ function renderEventBanner(){
       <div class="event-banner-card" style="margin-bottom:8px;" data-open-event="${escapeAttr(ev.id)}">
         <div>
           <div class="ebc-title">🏆 ${escapeHtml(ev.name)}</div>
-          <div class="ebc-sub">${escapeHtml(formatEventDateLabel(ev.eventDate))}${ev.pickupTime ? ' · car leaves at ' + escapeHtml(formatTime12h(ev.pickupTime)) : ''}</div>
+          <div class="ebc-sub">${escapeHtml(formatEventDateLabel(ev.eventDate))}${ev.pickupTime ? ' · Car leaves at ' + escapeHtml(formatTime12h(ev.pickupTime)) : ''}</div>
         </div>
         <div class="ebc-arrow">→</div>
       </div>`).join('')}</div>` : ''}
