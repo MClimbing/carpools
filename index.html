@@ -5,11 +5,15 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Michigan Climbing Carpools</title>
+<link rel="preconnect" href="https://script.google.com">
+<link rel="preconnect" href="https://script.googleusercontent.com" crossorigin>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;500;600;700&display=swap">
 <link rel="icon" type="image/png" href="favicon.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <meta name="theme-color" content="#041c35">
 <style>
-@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;500;600;700&display=swap');
 
 
 :root{
@@ -414,6 +418,7 @@ input::placeholder,textarea::placeholder{color:var(--text-dim);opacity:1;}
 // roster" link in comp emails) so this page can drop straight into that
 // comp instead of the weekly view. Empty string when there's none.
 const INITIAL_EVENT_ID = new URLSearchParams(location.search).get('event') || '';
+const POLL_MS = 30000;   // background "anything new?" check; was 5s, which hammered the server
 const BASE_DAYS = ['Tuesday', 'Thursday', 'Sunday'];
 const WEEKDAY_ORDER = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 const LOCATIONS = [
@@ -558,6 +563,8 @@ function moveSelectHtml(rider, cars, currentCarEmail){
 }
 
 async function init(){
+  // Start the roster request at the same time as bootstrap instead of after it.
+  const weekPrefetch = INITIAL_EVENT_ID ? null : callServer('getWeekData').catch(()=>null);
   try{
     me = await callServerWithRetry('getBootstrap', [], 2);
     if(!me){ throw new Error('Server returned no data after a few tries — try reloading the page.'); }
@@ -601,8 +608,8 @@ async function init(){
       // link) sets up the normal weekly refresh/poll when they leave it.
       await openEvent(INITIAL_EVENT_ID);
     } else {
-      await refresh();
-      pollTimer = setInterval(checkForUpdates, 5000);
+      await refresh(weekPrefetch);
+      pollTimer = setInterval(checkForUpdates, POLL_MS);
     }
   }catch(e){
     document.getElementById('locations').innerHTML =
@@ -635,9 +642,11 @@ function signatureOf(rowsArr, hiddenDaysArr, extraDaysArr, pickupTimesObj, dayLo
   return rowsPart + '::' + hiddenPart + '::' + extraPart + '::' + timesPart + '::' + locksPart + '::' + (restrictedMode?'1':'0') + '::' + (restrictedAllowed?'1':'0');
 }
 
-async function refresh(){
+async function refresh(prefetch){
   try{
-    const data = await callServer('getWeekData');
+    // prefetch is the in-flight getWeekData started in init(); use it if it succeeded.
+    let data = (prefetch && typeof prefetch.then === 'function') ? await prefetch : null;
+    if(!data || data.error) data = await callServer('getWeekData');
     if(!data){ throw new Error('Server returned no data at all (likely an Apps Script quota or auth hiccup).'); }
     if(data.error){ throw new Error(data.error); }
     if(me){
@@ -670,6 +679,7 @@ async function refresh(){
 // the page, show a small banner instead of redrawing underneath them.
 async function checkForUpdates(){
   if(viewingEvent) return; // paused while looking at an event's sign-up page
+  if(document.hidden) return; // don't poll from a background tab
   try{
     const data = await callServer('getWeekData');
     if(!data || data.error) return;
@@ -760,7 +770,7 @@ async function openEvent(eventId){
   document.getElementById('eventBanner').style.display = 'none';
   if(me && me.isAdmin) renderAdminPanel();
   await refreshEvent();
-  eventPollTimer = setInterval(checkForEventUpdates, 5000);
+  eventPollTimer = setInterval(checkForEventUpdates, POLL_MS);
 }
 function closeEvent(){
   viewingEvent = null;
@@ -771,7 +781,7 @@ function closeEvent(){
   document.getElementById('weeklyView').style.display = 'block';
   renderEventBanner();
   if(me && me.isAdmin) renderAdminPanel();
-  pollTimer = setInterval(checkForUpdates, 5000);
+  pollTimer = setInterval(checkForUpdates, POLL_MS);
   refresh();
 }
 
