@@ -469,7 +469,20 @@ const SESSION_KEY = 'mcc_session';
 let session = null;
 function loadSession(){ try { const s = JSON.parse(localStorage.getItem(SESSION_KEY) || 'null'); if (s && s.exp > Date.now()) return s; } catch (e) {} return null; }
 function saveSession(s){ session = s; try { if (s) localStorage.setItem(SESSION_KEY, JSON.stringify(s)); else localStorage.removeItem(SESSION_KEY); } catch (e) {} }
+// Add ?debug to the URL to see how long each server call takes (shown bottom-left).
+const DEBUG_TIMING = /[?&]debug\b/.test(location.search);
+function dbgLog(label){
+  if(!DEBUG_TIMING) return;
+  let box = document.getElementById('dbgBox');
+  if(!box){ box = document.createElement('pre'); box.id = 'dbgBox'; box.style.cssText = 'position:fixed;left:6px;bottom:6px;z-index:99999;margin:0;padding:6px 8px;background:#000c;color:#9f9;font:11px/1.35 monospace;border-radius:6px;max-width:92vw;white-space:pre-wrap;pointer-events:none;'; document.body.appendChild(box); }
+  box.textContent += label + '\n';
+}
 async function callServer(fnName, args, extra){
+  const t0 = performance.now();
+  try { return await callServerInner(fnName, args, extra); }
+  finally { dbgLog(fnName + ': ' + Math.round(performance.now() - t0) + ' ms (at ' + Math.round(performance.now()) + ' ms since page start)'); }
+}
+async function callServerInner(fnName, args, extra){
   let res;
   try {
     res = await fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
@@ -599,6 +612,7 @@ async function init(){
     const wd = me.weekDates || {};
     document.getElementById('weekRange').textContent = wd.mondayLabel ? `Week of ${wd.mondayLabel}` : 'Week of —';
 
+    dbgLog('bootstrap done, page drawn at ' + Math.round(performance.now()) + ' ms');
     events = me.events || [];
     renderEventBanner();
 
