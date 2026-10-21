@@ -1322,7 +1322,7 @@ function renderAdminPanel(){
       <h3>Admin — this comp</h3>
       <div class="sub">
         ${activeEvent.locked ? '🔒 Sign-ups are currently locked for this comp.' : '🔓 Sign-ups are currently open for this comp.'}
-        Comps don't auto-lock — lock it yourself when the roster's ready.
+        Comps don't auto-lock — lock it yourself when the roster's ready (locking also sets up hybrid pickups for anyone still on the waitlist).
       </div>
       <div class="admin-add">
         ${activeEvent.locked
@@ -1330,6 +1330,7 @@ function renderAdminPanel(){
           : `<button class="btn secondary" id="lockEventBtn">Lock this comp now</button>`}
         <button class="btn secondary" id="sendEventEmailsNowBtn">Send manifest emails now</button>
         <button class="btn secondary" id="sendEventTestEmailBtn">Send me a test email</button>
+        <button class="btn secondary" id="runEventHybridBtn">Run hybrid matching now</button>
         <button class="btn secondary" id="copyEventCarpoolsBtn">Copy carpools for email</button>
       </div>
     </div>
@@ -2144,6 +2145,16 @@ function renderAdminPanel(){
       withBusy(this, 'Sending…', async ()=>{
         await callServer('adminSendEventTestEmail', [viewingEvent]);
         alert('Test email sent to you.');
+      });
+    });
+  }
+  const runEventHybridBtn = document.getElementById('runEventHybridBtn');
+  if(runEventHybridBtn){
+    runEventHybridBtn.addEventListener('click', function(){
+      if(!confirm('Pair waitlisted riders with hybrid drivers (cars with an empty seat that can also swing by the other campus) right now? This also happens automatically when you lock the comp.')) return;
+      withBusy(this, 'Matching…', async ()=>{
+        await callServer('adminRunEventHybridMatching', [viewingEvent]);
+        await refreshEvent();
       });
     });
   }
