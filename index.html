@@ -1015,10 +1015,21 @@ function renderEventView(){
     } else if(myRole==='rider'){
       const waitlistPos = waiting.findIndex(r=>r.email===me.email);
       if(myRiderEntry){
-        signupHtml = `
+        const riderEditKey = viewingEvent + '|' + loc.key;
+        signupHtml = editingRiderNote.has(riderEditKey) ? `
+          <div class="add-row">
+            <input type="text" class="note-input" data-event-rider-edit-note-input="${riderEditKey}" maxlength="200" placeholder="Note (optional) — e.g. can't arrive until later" value="${escapeAttr(myRiderEntry.notes||'')}" />
+          </div>
+          <div class="add-row">
+            <button class="btn" data-event-rider-save-note="${loc.key}" data-rider-edit-key="${riderEditKey}" data-rider-choice="${escapeAttr(myRiderEntry.driverChoice||'')}">Update note</button>
+            <button class="btn secondary" data-event-rider-cancel-note="${riderEditKey}">Cancel</button>
+          </div>` : `
           <div class="you-status" style="flex-wrap:wrap;">
             <span>${waitlistPos >= 0 ? `You're #${waitlistPos+1} on the waitlist — you'll auto-fill the next open seat` : "You're signed up for a ride"}${myRiderEntry.notes ? `<br><span style="font-style:italic;color:var(--text-dim);">${escapeHtml(myRiderEntry.notes)}</span>` : ''}</span>
-            ${blocked ? '' : `<span class="cancel" data-event-remove-loc="${loc.key}" data-event-remove-role="rider" data-event-remove-email="${me.email}">Cancel</span>`}
+            <span style="display:flex;align-items:center;gap:12px;">
+              ${blocked ? '' : `<span class="cancel" data-event-rider-edit-note="${riderEditKey}">${myRiderEntry.notes ? 'Edit note' : 'Add note'}</span>`}
+              ${blocked ? '' : `<span class="cancel" data-event-remove-loc="${loc.key}" data-event-remove-role="rider" data-event-remove-email="${me.email}">Cancel</span>`}
+            </span>
           </div>`;
       } else if(blocked){
         signupHtml = '';
@@ -1083,6 +1094,22 @@ function renderEventView(){
       editingSeats.add(el.dataset.eventEditSeats);
       renderEventView();
     });
+  });
+  wrap.querySelectorAll('[data-event-rider-edit-note]').forEach(el=>{
+    el.addEventListener('click', ()=>{ editingRiderNote.add(el.dataset.eventRiderEditNote); renderEventView(); });
+  });
+  wrap.querySelectorAll('[data-event-rider-cancel-note]').forEach(el=>{
+    el.addEventListener('click', ()=>{ editingRiderNote.delete(el.dataset.eventRiderCancelNote); renderEventView(); });
+  });
+  wrap.querySelectorAll('[data-event-rider-save-note]').forEach(el=>{
+    el.addEventListener('click', ()=> withBusy(el, '…', async ()=>{
+      const editKey = el.dataset.riderEditKey;
+      const inp = document.querySelector(`[data-event-rider-edit-note-input="${editKey}"]`);
+      const notes = inp ? inp.value.trim() : '';
+      await callServer('addEventSignup', [viewingEvent, el.dataset.eventRiderSaveNote, 'rider', '', el.dataset.riderChoice || '', notes]);
+      editingRiderNote.delete(editKey);
+      await refreshEvent();
+    }));
   });
   wrap.querySelectorAll('[data-event-cancel-edit-seats]').forEach(el=>{
     el.addEventListener('click', ()=>{
@@ -2581,10 +2608,21 @@ function render(){
     } else if(myRole==='rider'){
       const waitlistPos = waiting.findIndex(r=>r.email===me.email);
       if(myRiderEntry){
-        signupHtml = `
+        const riderEditKey = activeDay + '|' + loc.key;
+        signupHtml = editingRiderNote.has(riderEditKey) ? `
+          <div class="add-row">
+            <input type="text" class="note-input" data-rider-edit-note-input="${riderEditKey}" maxlength="200" placeholder="Note (optional) — e.g. can't arrive until later" value="${escapeAttr(myRiderEntry.notes||'')}" />
+          </div>
+          <div class="add-row">
+            <button class="btn" data-rider-save-note="${loc.key}" data-rider-edit-key="${riderEditKey}" data-rider-choice="${escapeAttr(myRiderEntry.driverChoice||'')}">Update note</button>
+            <button class="btn secondary" data-rider-cancel-note="${riderEditKey}">Cancel</button>
+          </div>` : `
           <div class="you-status" style="flex-wrap:wrap;">
             <span>${waitlistPos >= 0 ? `You're #${waitlistPos+1} on the waitlist — you'll auto-fill the next open seat` : "You're signed up for a ride"}${myRiderEntry.notes ? `<br><span style="font-style:italic;color:var(--text-dim);">${escapeHtml(myRiderEntry.notes)}</span>` : ''}</span>
-            ${me.blocked ? '' : `<span class="cancel" data-remove-day="${activeDay}" data-remove-loc="${loc.key}" data-remove-role="rider" data-remove-email="${me.email}">Cancel</span>`}
+            <span style="display:flex;align-items:center;gap:12px;">
+              ${me.blocked ? '' : `<span class="cancel" data-rider-edit-note="${riderEditKey}">${myRiderEntry.notes ? 'Edit note' : 'Add note'}</span>`}
+              ${me.blocked ? '' : `<span class="cancel" data-remove-day="${activeDay}" data-remove-loc="${loc.key}" data-remove-role="rider" data-remove-email="${me.email}">Cancel</span>`}
+            </span>
           </div>`;
       } else if(me.blocked){
         signupHtml = '';
@@ -2658,6 +2696,22 @@ function render(){
       editingSeats.add(el.dataset.editSeats);
       render();
     });
+  });
+  wrap.querySelectorAll('[data-rider-edit-note]').forEach(el=>{
+    el.addEventListener('click', ()=>{ editingRiderNote.add(el.dataset.riderEditNote); render(); });
+  });
+  wrap.querySelectorAll('[data-rider-cancel-note]').forEach(el=>{
+    el.addEventListener('click', ()=>{ editingRiderNote.delete(el.dataset.riderCancelNote); render(); });
+  });
+  wrap.querySelectorAll('[data-rider-save-note]').forEach(el=>{
+    el.addEventListener('click', ()=> withBusy(el, '…', async ()=>{
+      const editKey = el.dataset.riderEditKey;
+      const inp = document.querySelector(`[data-rider-edit-note-input="${editKey}"]`);
+      const notes = inp ? inp.value.trim() : '';
+      await callServer('addSignup', [activeDay, el.dataset.riderSaveNote, 'rider', '', el.dataset.riderChoice || '', notes]);
+      editingRiderNote.delete(editKey);
+      await refresh();
+    }));
   });
   wrap.querySelectorAll('[data-cancel-edit-seats]').forEach(el=>{
     el.addEventListener('click', ()=>{
@@ -2742,6 +2796,7 @@ function render(){
   });
 }
 
+let editingRiderNote = new Set(); // day|loc (or comp|loc) keys where the rider is editing their own note
 let editingSeats = new Set(); // location keys currently showing the seat-edit form for a driver
 let adminEditingDriver = new Set(); // admin-edit keys currently showing the seat/note edit form for any driver's car
 let isBusy = false;
