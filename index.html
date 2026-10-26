@@ -895,7 +895,7 @@ function renderEventView(){
         let ridersHtml = car.assigned.map(r=>{
           const stopTag = (isHybrid && r.hybridStop) ? `<span class="note-tag" style="color:var(--blue);font-family:'JetBrains Mono',monospace;font-size:10px;" title="Picked up at ${escapeAttr(locationLabel(r.hybridStop))}">📍${escapeHtml(locationLabel(r.hybridStop))}</span>` : '';
           const rOtherLoc = LOCATIONS.find(l=>l.key!==r.location);
-          return `<div class="rider-chip"><span class="rider-name">${escapeHtml(r.name)}</span>${r.phone ? `<span class="phone">${escapeHtml(r.phone)}</span>` : ''}${stopTag}${r.notes ? `<span class="note-tag" title="${escapeAttr(r.notes)}">📝</span>` : ''}${me.isAdmin ? eventMoveSelectHtml(r, cars, car.email) : ''}${canRemove(r.email) ? `<span class="switch-campus-x" data-switch-event-loc="${r.location}" data-switch-event-email="${r.email}" data-switch-event-to="${rOtherLoc.key}" title="Switch to ${rOtherLoc.label}">⇄</span>` : ''}${canRemove(r.email) ? `<span class="remove-x" data-event-remove-loc="${r.location}" data-event-remove-role="${r.role}" data-event-remove-email="${r.email}">×</span>` : ''}</div>`;
+          return `<div class="rider-chip"><span class="rider-name">${escapeHtml(r.name)}</span>${r.phone ? `<span class="phone">${escapeHtml(r.phone)}</span>` : ''}${stopTag}${r.notes ? `<span class="note-tag" title="${escapeAttr(r.notes)}">📝</span>` : ''}${me.isAdmin ? `<span class="switch-campus-x" data-admin-note-event-loc="${r.location}" data-admin-note-email="${r.email}" data-admin-note-name="${escapeAttr(r.name)}" data-admin-note-cur="${escapeAttr(r.notes||'')}" title="${r.notes ? 'Edit note' : 'Add note'}">✎</span>` : ''}${me.isAdmin ? eventMoveSelectHtml(r, cars, car.email) : ''}${canRemove(r.email) ? `<span class="switch-campus-x" data-switch-event-loc="${r.location}" data-switch-event-email="${r.email}" data-switch-event-to="${rOtherLoc.key}" title="Switch to ${rOtherLoc.label}">⇄</span>` : ''}${canRemove(r.email) ? `<span class="remove-x" data-event-remove-loc="${r.location}" data-event-remove-role="${r.role}" data-event-remove-email="${r.email}">×</span>` : ''}</div>`;
         }).join('');
         const openSeats = seats - car.assigned.length;
         const reservedOpen = Math.min(Number(car.reservedSeats)||0, openSeats);
@@ -1198,6 +1198,16 @@ function renderEventView(){
       await callServer('adminReleaseEventReservedSeat', [viewingEvent, el.dataset.eventReleaseLoc, el.dataset.eventReleaseDriver]);
       await refreshEvent();
     }));
+  });
+  wrap.querySelectorAll('[data-admin-note-event-loc]').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      const v = prompt('Note for ' + el.dataset.adminNoteName + ' (leave blank to clear):', el.dataset.adminNoteCur || '');
+      if(v === null) return;
+      withBusy(el, '…', async ()=>{
+        await callServer('adminEditEventRiderNote', [viewingEvent, el.dataset.adminNoteEventLoc, el.dataset.adminNoteEmail, v.trim()]);
+        await refreshEvent();
+      });
+    });
   });
   wrap.querySelectorAll('[data-switch-event-email]').forEach(el=>{
     el.addEventListener('click', ()=> withBusy(el, '…', async ()=>{
@@ -2496,7 +2506,7 @@ function render(){
         let ridersHtml = car.assigned.map(r=>{
           const stopTag = (isHybrid && r.hybridStop) ? `<span class="note-tag" style="color:var(--blue);font-family:'JetBrains Mono',monospace;font-size:10px;" title="Picked up at ${escapeAttr(locationLabel(r.hybridStop))}">📍${escapeHtml(locationLabel(r.hybridStop))}</span>` : '';
           const rOtherLoc = LOCATIONS.find(l=>l.key!==r.location);
-          return `<div class="rider-chip"><span class="rider-name">${escapeHtml(r.name)}</span>${r.phone ? `<span class="phone">${escapeHtml(r.phone)}</span>` : ''}${stopTag}${r.notes ? `<span class="note-tag" title="${escapeAttr(r.notes)}">📝</span>` : ''}${me.isAdmin ? moveSelectHtml(r, cars, car.email) : ''}${canRemove(r.email) ? `<span class="switch-campus-x" data-switch-day="${r.day}" data-switch-loc="${r.location}" data-switch-email="${r.email}" data-switch-to="${rOtherLoc.key}" title="Switch to ${rOtherLoc.label}">⇄</span>` : ''}${canRemove(r.email) ? `<span class="remove-x" data-remove-day="${r.day}" data-remove-loc="${r.location}" data-remove-role="${r.role}" data-remove-email="${r.email}">×</span>` : ''}</div>`;
+          return `<div class="rider-chip"><span class="rider-name">${escapeHtml(r.name)}</span>${r.phone ? `<span class="phone">${escapeHtml(r.phone)}</span>` : ''}${stopTag}${r.notes ? `<span class="note-tag" title="${escapeAttr(r.notes)}">📝</span>` : ''}${me.isAdmin ? `<span class="switch-campus-x" data-admin-note-day="${r.day}" data-admin-note-loc="${r.location}" data-admin-note-email="${r.email}" data-admin-note-name="${escapeAttr(r.name)}" data-admin-note-cur="${escapeAttr(r.notes||'')}" title="${r.notes ? 'Edit note' : 'Add note'}">✎</span>` : ''}${me.isAdmin ? moveSelectHtml(r, cars, car.email) : ''}${canRemove(r.email) ? `<span class="switch-campus-x" data-switch-day="${r.day}" data-switch-loc="${r.location}" data-switch-email="${r.email}" data-switch-to="${rOtherLoc.key}" title="Switch to ${rOtherLoc.label}">⇄</span>` : ''}${canRemove(r.email) ? `<span class="remove-x" data-remove-day="${r.day}" data-remove-loc="${r.location}" data-remove-role="${r.role}" data-remove-email="${r.email}">×</span>` : ''}</div>`;
         }).join('');
         const openSeats = seats - car.assigned.length;
         const reservedOpen = Math.min(Number(car.reservedSeats)||0, openSeats);
@@ -2781,6 +2791,16 @@ function render(){
       await callServer('adminReleaseReservedSeat', [el.dataset.releaseDay, el.dataset.releaseLoc, el.dataset.releaseDriver]);
       await refresh();
     }));
+  });
+  wrap.querySelectorAll('[data-admin-note-day]').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      const v = prompt('Note for ' + el.dataset.adminNoteName + ' (leave blank to clear):', el.dataset.adminNoteCur || '');
+      if(v === null) return;
+      withBusy(el, '…', async ()=>{
+        await callServer('adminEditRiderNote', [el.dataset.adminNoteDay, el.dataset.adminNoteLoc, el.dataset.adminNoteEmail, v.trim()]);
+        await refresh();
+      });
+    });
   });
   wrap.querySelectorAll('[data-switch-email]').forEach(el=>{
     el.addEventListener('click', ()=> withBusy(el, '…', async ()=>{
