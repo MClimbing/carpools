@@ -2381,7 +2381,7 @@ function computeAssignments(drivers, riders){
   sorted.forEach(r=>{
     const chosen = r.driverChoice && carByEmail[r.driverChoice];
     if(chosen){
-      if(chosen.assigned.length < chosen.seats){
+      if(chosen.assigned.length < Math.max((Number(chosen.seats)||0) - (Number(chosen.reservedSeats)||0), 0)){
         chosen.assigned.push(r);
       } else {
         stuck.push(r); // their specific pick is full — they wait for that car, not a random one
