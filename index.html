@@ -60,7 +60,8 @@ h1{font-size:26px;margin:0 0 6px;font-weight:700;letter-spacing:-0.01em;}
 
 .hamburger-btn{background:var(--surface);border:1px solid var(--line);border-radius:8px;width:40px;height:40px;flex-shrink:0;color:var(--text);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:border-color .15s, color .15s;}
 .hamburger-btn:hover{border-color:var(--orange);color:var(--orange);}
-.share-btn{margin-right:8px;}
+.header-actions{display:flex;gap:8px;flex-shrink:0;}
+@media (max-width:520px){ .header-actions{flex-direction:column;gap:6px;} .header-actions .hamburger-btn{width:38px;height:38px;} }
 .share-btn svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
 .share-toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--surface-2);color:var(--text);border:1px solid var(--orange);border-radius:20px;padding:9px 16px;font-size:13px;z-index:1000;opacity:0;pointer-events:none;transition:opacity .2s;}
 .share-toast.show{opacity:1;}
@@ -329,8 +330,10 @@ input::placeholder,textarea::placeholder{color:var(--text-dim);opacity:1;}
       <h1>Practice Carpools</h1>
       <div class="week-range" id="weekRange">loading week<span class="loading-dots"><span></span><span></span><span></span></span></div>
     </div>
+    <div class="header-actions">
     <button class="hamburger-btn share-btn" id="shareBtn" type="button" aria-label="Share this page" title="Share this page"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.6" y1="13.5" x2="15.4" y2="17.5"/><line x1="15.4" y1="6.5" x2="8.6" y2="10.5"/></svg></button>
     <button class="hamburger-btn" id="hamburgerBtn" type="button" aria-label="Menu">☰</button>
+    </div>
     <div class="hamburger-menu" id="hamburgerMenu" style="display:none;"></div>
   </header>
 
