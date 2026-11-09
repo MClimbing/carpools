@@ -60,6 +60,10 @@ h1{font-size:26px;margin:0 0 6px;font-weight:700;letter-spacing:-0.01em;}
 
 .hamburger-btn{background:var(--surface);border:1px solid var(--line);border-radius:8px;width:40px;height:40px;flex-shrink:0;color:var(--text);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:border-color .15s, color .15s;}
 .hamburger-btn:hover{border-color:var(--orange);color:var(--orange);}
+.share-btn{margin-right:8px;}
+.share-btn svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+.share-toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--surface-2);color:var(--text);border:1px solid var(--orange);border-radius:20px;padding:9px 16px;font-size:13px;z-index:1000;opacity:0;pointer-events:none;transition:opacity .2s;}
+.share-toast.show{opacity:1;}
 .hamburger-menu{position:absolute;top:100%;right:0;margin-top:8px;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);min-width:240px;max-width:300px;max-height:70vh;overflow-y:auto;box-shadow:0 8px 24px rgba(0,0,0,0.45);z-index:50;padding:6px;}
 .hamburger-menu .hm-section-label{font-family:'JetBrains Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--text-dim);padding:10px 10px 4px;}
 .hamburger-menu .hm-item{padding:9px 10px;border-radius:6px;cursor:pointer;font-size:13.5px;color:var(--text);line-height:1.3;}
@@ -325,6 +329,7 @@ input::placeholder,textarea::placeholder{color:var(--text-dim);opacity:1;}
       <h1>Practice Carpools</h1>
       <div class="week-range" id="weekRange">loading week<span class="loading-dots"><span></span><span></span><span></span></span></div>
     </div>
+    <button class="hamburger-btn share-btn" id="shareBtn" type="button" aria-label="Share this page" title="Share this page"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.6" y1="13.5" x2="15.4" y2="17.5"/><line x1="15.4" y1="6.5" x2="8.6" y2="10.5"/></svg></button>
     <button class="hamburger-btn" id="hamburgerBtn" type="button" aria-label="Menu">☰</button>
     <div class="hamburger-menu" id="hamburgerMenu" style="display:none;"></div>
   </header>
@@ -427,7 +432,7 @@ const LOCATIONS = [
 ];
 
 let me = null;         // {email, isAdmin, name, phone, weekKey, weekDates}
-let activeDay = 'Tuesday';
+let activeDay = (function(){ const d = new URLSearchParams(location.search).get('day'); return ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'].indexOf(d) >= 0 ? d : 'Tuesday'; })();
 let myRole = null;
 let rows = [];          // current week's signups
 let admins = [];
@@ -493,7 +498,7 @@ async function callServerInner(fnName, args, extra){
   return out.result;
 }
 function showSignIn(msg){
-  ['gate','mainUI','hamburgerBtn','hamburgerMenu'].forEach(id => { const n = document.getElementById(id); if (n) n.style.display = 'none'; });
+  ['gate','mainUI','hamburgerBtn','shareBtn','hamburgerMenu'].forEach(id => { const n = document.getElementById(id); if (n) n.style.display = 'none'; });
   // Same header as after sign-in: "Week of <Monday>"
   const t = new Date(); const mon = new Date(t.getFullYear(), t.getMonth(), t.getDate() - ((t.getDay() + 6) % 7));
   document.getElementById('weekRange').textContent = 'Week of ' + mon.toLocaleDateString('en-US', {month:'long', day:'numeric'});
@@ -507,7 +512,7 @@ function renderGoogleButton(){
     callback: r => {
       document.getElementById('signinErr').textContent = '';
       callServer('signIn', [], { idToken: r.credential })
-        .then(s => { saveSession(s); document.getElementById('signin').style.display = 'none'; document.getElementById('hamburgerBtn').style.display = ''; init(); })
+        .then(s => { saveSession(s); document.getElementById('signin').style.display = 'none'; document.getElementById('hamburgerBtn').style.display = ''; document.getElementById('shareBtn').style.display = ''; init(); })
         .catch(e => { document.getElementById('signinErr').textContent = (e && e.message) || "Couldn't sign in."; });
     } });
   document.getElementById('gsiBtn').innerHTML = '';
@@ -2963,6 +2968,39 @@ function buildHamburgerMenu(){
     });
   });
 }
+// ---- share button: copies (or natively shares) a link straight to whatever page is open ----
+function showShareToast(msg){
+  let t = document.getElementById('shareToast');
+  if(!t){ t = document.createElement('div'); t.id = 'shareToast'; t.className = 'share-toast'; document.body.appendChild(t); }
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(showShareToast._t);
+  showShareToast._t = setTimeout(()=>t.classList.remove('show'), 2200);
+}
+function currentShareInfo(){
+  const base = location.origin + location.pathname;
+  if(viewingEvent){
+    const name = (activeEvent && activeEvent.name) ? activeEvent.name : 'Comp carpools';
+    return {url: base + '?event=' + encodeURIComponent(viewingEvent), title: name + ' — carpools'};
+  }
+  return {url: base + '?day=' + encodeURIComponent(activeDay), title: 'Michigan Climbing Team — ' + activeDay + ' carpools'};
+}
+document.getElementById('shareBtn').addEventListener('click', async ()=>{
+  const info = currentShareInfo();
+  if(navigator.share){
+    try{ await navigator.share({title: info.title, text: info.title, url: info.url}); return; }
+    catch(e){ if(e && e.name === 'AbortError') return; }
+  }
+  let ok = false;
+  try{ await navigator.clipboard.writeText(info.url); ok = true; }catch(e){}
+  if(!ok){
+    try{
+      const ta = document.createElement('textarea'); ta.value = info.url; ta.style.position = 'fixed'; ta.style.opacity = '0';
+      document.body.appendChild(ta); ta.select(); ok = document.execCommand('copy'); document.body.removeChild(ta);
+    }catch(e){}
+  }
+  if(ok) showShareToast('Link copied');
+  else prompt('Copy this link:', info.url);
+});
 document.getElementById('hamburgerBtn').addEventListener('click', (e)=>{
   e.stopPropagation();
   const menu = document.getElementById('hamburgerMenu');
